@@ -1,1 +1,21 @@
-node_modules
+# Dependencias
+node_modules/
+*/node_modules/
+
+# Variables de entorno — NUNCA subir a GitHub
+.env
+*/.env
+backend/.env
+frontend/.env
+
+# Logs
+logs/
+*.log
+
+# Build
+dist/
+build/
+
+# Sistema
+.DS_Store
+Thumbs.db
