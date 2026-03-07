@@ -56,10 +56,8 @@ const CSS = `
 }
 body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
 
-/* ── SCROLL ── */
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0a0a0a}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:2px}
 
-/* ── NAV ── */
 .nav{
   position:fixed;top:0;left:0;right:0;z-index:200;height:60px;
   background:rgba(0,0,0,0.96);backdrop-filter:blur(24px);
@@ -88,7 +86,6 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 }
 .nav-cta:hover{background:#fff}
 
-/* ── HERO ── */
 .hero{
   min-height:100vh;padding-top:60px;display:flex;flex-direction:column;
   align-items:center;justify-content:center;position:relative;overflow:hidden;
@@ -147,8 +144,7 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .btn-ghost:hover{border-color:var(--gold);background:rgba(212,175,55,.08)}
 .hero-stats{
   display:flex;justify-content:center;gap:72px;
-  margin-top:52px;
-  position:relative;
+  margin-top:52px;position:relative;
 }
 .hstat-num{
   font-family:'Playfair Display',serif;font-size:38px;font-weight:700;
@@ -156,14 +152,12 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 }
 .hstat-lbl{font-size:10px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:6px}
 
-/* ── SECTION ── */
 .section{padding:96px 40px;max-width:1200px;margin:0 auto}
 .sec-tag{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:300;font-style:italic;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:12px}
 .sec-title{font-family:'Playfair Display',serif;font-size:clamp(40px,6vw,64px);font-weight:900;font-style:italic;color:#fff;line-height:1;letter-spacing:-1px}
 .sec-head{text-align:center;margin-bottom:64px}
 .gold-rule{width:48px;height:1px;background:var(--gold);margin:20px auto 0;opacity:.6}
 
-/* ── BARBERO CARDS ── */
 .barb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px}
 .barb-card{
   background:var(--card);border:1px solid var(--border);
@@ -190,7 +184,6 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .barb-esp{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
 .barb-rating{font-size:13px;color:var(--gold)}
 
-/* ── SERVICIOS ── */
 .svc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
 .svc-item{
   background:var(--card);border:1px solid var(--border);
@@ -202,7 +195,6 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .svc-dur{font-size:11px;color:var(--muted);letter-spacing:1px}
 .svc-price{font-family:'Playfair Display',serif;font-size:22px;color:var(--gold);font-weight:700;font-style:italic}
 
-/* ── RESERVA FLOW ── */
 .res-page{min-height:100vh;padding:80px 16px 60px;background:#000;display:flex;flex-direction:column;align-items:center}
 .res-wrap{width:100%;max-width:640px}
 .res-header{text-align:center;margin-bottom:40px}
@@ -257,7 +249,6 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .conf-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:14px}
 .conf-lbl{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'DM Sans',sans-serif}
 
-/* ── ABONO ── */
 .abono-tabs{display:flex;gap:8px;margin-bottom:20px}
 .abono-tab{flex:1;padding:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s}
 .abono-tab.act{background:rgba(212,175,55,.12);border-color:var(--gold);color:var(--gold)}
@@ -277,7 +268,6 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .info-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0}
 .info-val{font-weight:600;color:var(--text)}
 
-/* ── ADMIN ── */
 .admin{min-height:100vh;display:flex;padding-top:60px;background:var(--dark)}
 .sidebar{width:210px;min-height:calc(100vh - 60px);background:#0D0D0D;border-right:1px solid var(--border);padding:20px 0;position:sticky;top:60px;flex-shrink:0}
 .sb-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);padding:0 16px;margin-bottom:6px;margin-top:20px;font-family:'DM Sans',sans-serif}
@@ -325,7 +315,6 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .act-btn.s{background:rgba(16,185,129,.12);color:var(--libre)}.act-btn.s:hover{background:var(--libre);color:#fff}
 .act-btn.g{background:rgba(255,255,255,.07);color:var(--text)}.act-btn.g:hover{background:rgba(255,255,255,.15)}
 
-/* ── PIN LOGIN ── */
 .pin-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000;padding:16px}
 .pin-card{background:var(--card);border:1px solid var(--border);padding:48px 40px;width:100%;max-width:380px;text-align:center}
 .pin-logo{font-family:'Playfair Display',serif;font-size:40px;font-weight:900;font-style:italic;color:var(--gold);line-height:1;margin-bottom:4px}
@@ -353,7 +342,6 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .pin-key.del{font-family:'DM Sans',sans-serif;font-size:18px;font-style:normal}
 .pin-err{font-size:12px;color:var(--ocupado);margin-top:8px}
 
-/* ── BARBERO PANEL ── */
 .bp{min-height:100vh;background:var(--dark);padding-top:60px}
 .bp-header{background:var(--card);border-bottom:1px solid var(--border);padding:20px 32px;display:flex;align-items:center;gap:16px}
 .bp-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-weight:700;font-size:16px;color:#000;flex-shrink:0}
@@ -371,7 +359,6 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .cita-svc{font-size:12px;color:var(--muted)}
 .cita-btns{display:flex;gap:7px;margin-left:auto}
 
-/* ── MONITOR ── */
 .monitor{min-height:100vh;background:#000;padding-top:60px;display:flex;flex-direction:column}
 .mon-head{
   background:rgba(0,0,0,.95);border-bottom:1px solid rgba(212,175,55,.2);
@@ -419,14 +406,12 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .mon-stat{font-size:13px;color:var(--muted)}
 .mon-stat strong{color:var(--text);margin-right:4px}
 
-/* ── MODAL ── */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
 .modal{background:var(--card);border:1px solid var(--border);padding:32px;width:100%;max-width:500px;position:relative;max-height:90vh;overflow-y:auto}
 .modal-close{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;transition:color .2s}
 .modal-close:hover{color:#fff}
 .modal-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;font-style:italic;margin-bottom:22px}
 
-/* ── LANDING SELECTOR ── */
 .selector{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000;padding:16px}
 .sel-card{background:var(--card);border:1px solid var(--border);padding:48px 40px;width:100%;max-width:440px}
 .sel-logo{font-family:'Playfair Display',serif;font-size:52px;font-weight:900;font-style:italic;color:var(--gold);line-height:.9;text-align:center;margin-bottom:4px}
@@ -438,11 +423,9 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .role-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;font-family:'DM Sans',sans-serif}
 .role-desc{font-size:11px;color:var(--muted)}
 
-/* ── MISC ── */
 .sep{height:1px;background:var(--border);margin:20px 0}
 .field{margin-bottom:18px}
 
-/* ── ANIMATIONS ── */
 @keyframes pg{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.4)}50%{box-shadow:0 0 0 5px rgba(16,185,129,0)}}
 @keyframes pr{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}50%{box-shadow:0 0 0 7px rgba(239,68,68,0)}}
 @keyframes py{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.4)}50%{box-shadow:0 0 0 5px rgba(245,158,11,0)}}
@@ -475,7 +458,7 @@ function Clock() {
 }
 
 // ─────────────────────────────────────────────
-// BARBERO MODAL (Perfil)
+// BARBERO MODAL
 // ─────────────────────────────────────────────
 function BarberoModal({ b, onClose, onReservar }) {
   return (
@@ -497,7 +480,7 @@ function BarberoModal({ b, onClose, onReservar }) {
         <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: "var(--muted)", marginBottom: 10 }}>Galería de trabajos</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 20 }}>
           {b.galeria.map(g => (
-            <div key={g} style={{ aspectRatio: "1", background: `${b.color}10`, border: `1px solid ${b.color}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "var(--muted)", textAlign: "center", padding: 8, fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: 14 }}>{g}</div>
+            <div key={g} style={{ aspectRatio: "1", background: `${b.color}10`, border: `1px solid ${b.color}25`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: 14, color: "var(--muted)", textAlign: "center", padding: 8 }}>{g}</div>
           ))}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--muted)", marginBottom: 20 }}>
@@ -517,11 +500,9 @@ function BarberoModal({ b, onClose, onReservar }) {
 // ─────────────────────────────────────────────
 function Home({ onNav }) {
   const [modal, setModal] = useState(null);
-  const now = new Date();
 
   return (
     <div>
-      {/* HERO */}
       <section className="hero">
         <div className="hero-grain" />
         <div className="hero-glow" />
@@ -548,7 +529,6 @@ function Home({ onNav }) {
         </div>
       </section>
 
-      {/* EQUIPO */}
       <section id="equipo" style={{ background: "#060606", borderTop: "1px solid rgba(255,255,255,.04)" }}>
         <div className="section">
           <div className="sec-head">
@@ -560,10 +540,10 @@ function Home({ onNav }) {
             {BARBEROS.map(b => (
               <div key={b.id} className="barb-card" onClick={() => setModal(b)}>
                 <div className="barb-photo" style={{ background: `${b.color}0D` }}>
-                           {b.foto_url
-                            ? <img src={b.foto_url} alt={b.nombre} style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0 }} />
-                            : <div className="barb-initials-ph" style={{ color: b.color }}>{b.iniciales}</div>
-                            }
+                  {b.foto_url
+                    ? <img src={b.foto_url} alt={b.nombre} style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0 }} />
+                    : <div className="barb-initials-ph" style={{ color: b.color }}>{b.iniciales}</div>
+                  }
                   <div className="barb-hover">
                     <div className="barb-hover-cta">Ver perfil completo →</div>
                   </div>
@@ -580,7 +560,6 @@ function Home({ onNav }) {
         </div>
       </section>
 
-      {/* SERVICIOS */}
       <section style={{ background: "#000", borderTop: "1px solid rgba(255,255,255,.04)" }}>
         <div className="section">
           <div className="sec-head">
@@ -611,7 +590,7 @@ function Home({ onNav }) {
 }
 
 // ─────────────────────────────────────────────
-// RESERVAS — 7 pasos (incluye abono)
+// RESERVAS
 // ─────────────────────────────────────────────
 function Reservas({ initData = {} }) {
   const [step, setStep] = useState(initData.barbero ? 2 : 1);
@@ -636,7 +615,6 @@ function Reservas({ initData = {} }) {
     </div>
   );
 
-  // ÉXITO
   if (step === 8) return (
     <div className="res-page">
       <div className="res-wrap">
@@ -667,9 +645,7 @@ function Reservas({ initData = {} }) {
           <div className="res-sub">Barber Boss · Sistema de Reservas</div>
         </div>
         <StepBar />
-
         <div className="fcard fade" key={step}>
-          {/* PASO 1 */}
           {step === 1 && <>
             <div className="ftitle">Tus Datos</div>
             <div className="fsub">Necesitamos tus datos para confirmar la cita</div>
@@ -684,7 +660,6 @@ function Reservas({ initData = {} }) {
             </div>
           </>}
 
-          {/* PASO 2 */}
           {step === 2 && <>
             <div className="ftitle">Elige tu Barbero</div>
             <div className="fsub">¿Con quién quieres ir?</div>
@@ -704,7 +679,6 @@ function Reservas({ initData = {} }) {
             </div>
           </>}
 
-          {/* PASO 3 */}
           {step === 3 && <>
             <div className="ftitle">Elige el Servicio</div>
             <div className="fsub">¿Qué te vas a hacer hoy?</div>
@@ -722,7 +696,6 @@ function Reservas({ initData = {} }) {
             </div>
           </>}
 
-          {/* PASO 4 */}
           {step === 4 && <>
             <div className="ftitle">Elige la Fecha</div>
             <div className="fsub">Selecciona el día de tu cita</div>
@@ -745,7 +718,6 @@ function Reservas({ initData = {} }) {
             </div>
           </>}
 
-          {/* PASO 5 */}
           {step === 5 && <>
             <div className="ftitle">Elige la Hora</div>
             <div className="fsub">Disponibilidad de {form.barbero?.nombre.split(" ")[0]} · {form.fecha}</div>
@@ -766,7 +738,6 @@ function Reservas({ initData = {} }) {
             </div>
           </>}
 
-          {/* PASO 6 — ABONO */}
           {step === 6 && <>
             <div className="ftitle">Pago de Abono</div>
             <div className="fsub">Aparta tu cupo con un abono mínimo de {fmtCOP(ABONO_MIN)}</div>
@@ -803,7 +774,6 @@ function Reservas({ initData = {} }) {
             </div>
           </>}
 
-          {/* PASO 7 */}
           {step === 7 && <>
             <div className="ftitle">Confirmar Reserva</div>
             <div className="fsub">Revisa los detalles antes de confirmar</div>
@@ -811,7 +781,7 @@ function Reservas({ initData = {} }) {
               {[["Cliente", form.nombre], ["Teléfono", form.telefono], ["Barbero", form.barbero?.nombre], ["Servicio", form.servicio?.nombre], ["Fecha", form.fecha], ["Hora", form.hora], ["Método pago", abonoMetodo.charAt(0).toUpperCase() + abonoMetodo.slice(1)], ["Comprobante", comprobante]].map(([l, v]) => (
                 <div className="conf-row" key={l}>
                   <span className="conf-lbl">{l}</span>
-                  <span style={{ fontWeight: 600, fontSize: l === "Total" ? 20 : 14, fontFamily: l === "Total" ? "'Playfair Display',serif" : "inherit", fontStyle: l === "Total" ? "italic" : "normal", color: l === "Total" ? "var(--gold)" : "var(--text)" }}>{v}</span>
+                  <span style={{ fontWeight: 600, fontSize: 14 }}>{v}</span>
                 </div>
               ))}
             </div>
@@ -834,22 +804,23 @@ function Reservas({ initData = {} }) {
 // ─────────────────────────────────────────────
 function SuperAdmin({ nav }) {
   const [autenticado, setAutenticado] = useState(false);
-  const [pin, setPin] = useState("");
-  const [error, setError] = useState(false);
-  const [seccion, setSeccion] = useState("dashboard");
-  const [reservas, setReservas] = useState([]);
-  const PIN_ADMIN = "0000";
+  const [pinAdmin, setPinAdmin] = useState("");
+  const [errorAdmin, setErrorAdmin] = useState(false);
+  const [tab, setTab] = useState("dashboard");
+  const [reservas, setReservas] = useState(RESERVAS_INIT);
+  const [abonoModal, setAbonoModal] = useState(null);
+  const PIN_ADMIN = "0000"; // ← Cambia este PIN por el que quieras
 
-  const verificarPin = (digito) => {
-    const nuevo = pin + digito;
-    setPin(nuevo);
+  const verificarPinAdmin = (digito) => {
+    const nuevo = pinAdmin + digito;
+    setPinAdmin(nuevo);
     if (nuevo.length === 4) {
       if (nuevo === PIN_ADMIN) {
         setAutenticado(true);
-        setError(false);
+        setErrorAdmin(false);
       } else {
-        setError(true);
-        setTimeout(() => { setPin(""); setError(false); }, 1000);
+        setErrorAdmin(true);
+        setTimeout(() => { setPinAdmin(""); setErrorAdmin(false); }, 1000);
       }
     }
   };
@@ -857,28 +828,28 @@ function SuperAdmin({ nav }) {
   if (!autenticado) return (
     <div style={{ minHeight:"100vh", background:"#080808", display:"flex", alignItems:"center", justifyContent:"center" }}>
       <div style={{ background:"#141414", border:"1px solid rgba(255,255,255,.08)", padding:"48px 40px", width:340, textAlign:"center" }}>
-        <div style={{ fontFamily:"'Playfair Display',serif", fontSize:28, fontStyle:"italic", fontWeight:900, color:"#D4AF37", marginBottom:8 }}>Admin</div>
-        <div style={{ fontSize:12, color:"#666", letterSpacing:2, textTransform:"uppercase", marginBottom:32 }}>Ingresa tu PIN</div>
+        <div style={{ fontFamily:"'Playfair Display',serif", fontSize:32, fontStyle:"italic", fontWeight:900, color:"#D4AF37", marginBottom:4 }}>Admin</div>
+        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:13, fontStyle:"italic", color:"#555", letterSpacing:3, marginBottom:36 }}>Barber Boss</div>
         <div style={{ display:"flex", justifyContent:"center", gap:16, marginBottom:32 }}>
           {[0,1,2,3].map(i => (
-            <div key={i} style={{ width:14, height:14, borderRadius:"50%", background: pin.length > i ? (error ? "#EF4444" : "#D4AF37") : "rgba(255,255,255,.1)", transition:"all .2s" }} />
+            <div key={i} style={{ width:14, height:14, borderRadius:"50%", background: pinAdmin.length > i ? (errorAdmin ? "#EF4444" : "#D4AF37") : "rgba(255,255,255,.1)", transition:"all .2s" }} />
           ))}
         </div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:10 }}>
           {[1,2,3,4,5,6,7,8,9].map(n => (
-            <button key={n} onClick={() => pin.length < 4 && verificarPin(String(n))}
+            <button key={n} onClick={() => pinAdmin.length < 4 && verificarPinAdmin(String(n))}
               style={{ padding:"18px 0", background:"#1A1A1A", border:"1px solid rgba(255,255,255,.07)", color:"#fff", fontSize:20, fontWeight:600, cursor:"pointer", borderRadius:2 }}>
               {n}
             </button>
           ))}
         </div>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-          <button onClick={() => setPin(p => p.slice(0,-1))}
+          <button onClick={() => setPinAdmin(p => p.slice(0,-1))}
             style={{ padding:"18px 0", background:"#1A1A1A", border:"1px solid rgba(255,255,255,.07)", color:"#888", fontSize:14, cursor:"pointer", borderRadius:2 }}>⌫</button>
-          <button onClick={() => pin.length < 4 && verificarPin("0")}
+          <button onClick={() => pinAdmin.length < 4 && verificarPinAdmin("0")}
             style={{ padding:"18px 0", background:"#1A1A1A", border:"1px solid rgba(255,255,255,.07)", color:"#fff", fontSize:20, fontWeight:600, cursor:"pointer", borderRadius:2 }}>0</button>
         </div>
-        {error && <div style={{ marginTop:16, fontSize:12, color:"#EF4444", letterSpacing:1 }}>PIN incorrecto</div>}
+        {errorAdmin && <div style={{ marginTop:16, fontSize:12, color:"#EF4444", letterSpacing:1 }}>PIN incorrecto</div>}
       </div>
     </div>
   );
@@ -913,11 +884,16 @@ function SuperAdmin({ nav }) {
             <span>{s.icon}</span> {s.label}
           </button>
         ))}
+        <div style={{ position:"absolute", bottom:20, left:0, right:0, padding:"0 16px" }}>
+          <button onClick={() => setAutenticado(false)}
+            style={{ width:"100%", padding:"8px", background:"rgba(239,68,68,.08)", border:"1px solid rgba(239,68,68,.2)", color:"#EF4444", fontSize:11, letterSpacing:1, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+            Cerrar Sesión
+          </button>
+        </div>
       </div>
 
       <div className="admin-main">
 
-        {/* DASHBOARD */}
         {tab === "dashboard" && <div className="fade">
           <div className="pg-head">
             <div className="pg-title">Dashboard</div>
@@ -973,7 +949,6 @@ function SuperAdmin({ nav }) {
               ))}
             </div>
           </div>
-          {/* Estado real */}
           <div className="blk">
             <div className="blk-title">Estado en Tiempo Real</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 12 }}>
@@ -996,7 +971,6 @@ function SuperAdmin({ nav }) {
           </div>
         </div>}
 
-        {/* ABONOS */}
         {tab === "abonos" && <div className="fade">
           <div className="pg-head">
             <div className="pg-title">Abonos</div>
@@ -1046,7 +1020,6 @@ function SuperAdmin({ nav }) {
           </div>
         </div>}
 
-        {/* TODAS LAS CITAS */}
         {tab === "reservas" && <div className="fade">
           <div className="pg-head"><div className="pg-title">Gestión de Citas</div><div className="pg-sub">Todas las reservas del día</div></div>
           <div className="blk">
@@ -1078,7 +1051,6 @@ function SuperAdmin({ nav }) {
           </div>
         </div>}
 
-        {/* BARBEROS */}
         {tab === "barberos" && <div className="fade">
           <div className="pg-head"><div className="pg-title">Gestión Barberos</div><div className="pg-sub">Administra tu equipo</div></div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 16 }}>
@@ -1111,7 +1083,6 @@ function SuperAdmin({ nav }) {
           </div>
         </div>}
 
-        {/* CALENDARIO */}
         {tab === "calendario" && <div className="fade">
           <div className="pg-head"><div className="pg-title">Calendario</div><div className="pg-sub">Vista del día con todos los barberos</div></div>
           <div className="blk">
@@ -1163,11 +1134,10 @@ function SuperAdmin({ nav }) {
           </div>
         </div>}
 
-        {/* REPORTES */}
         {tab === "reportes" && <div className="fade">
           <div className="pg-head"><div className="pg-title">Reportes</div><div className="pg-sub">Estadísticas del negocio</div></div>
           <div className="kpi-grid">
-            {[["Servicios Semana", "98", "↑ +8% vs semana pasada"], ["Servicios Mes", "380", "↑ +15% vs mes pasado"], ["Servicio Top", "Corte + Barba", "38% del total"], ["Barbero #1", "David Rojas", "7 servicios hoy"]].map(([l, v, s]) => (
+            {[["Servicios Semana", "98", "↑ +8% vs semana pasada"], ["Servicios Mes", "380", "↑ +15% vs mes pasado"], ["Servicio Top", "Corte + Barba", "38% del total"], ["Barbero #1", "Keiner", "7 servicios hoy"]].map(([l, v, s]) => (
               <div key={l} className="kpi"><div className="kpi-lbl">{l}</div><div className="kpi-val gold" style={{ fontSize: 28 }}>{v}</div><div className="kpi-sub">{s}</div></div>
             ))}
           </div>
@@ -1206,7 +1176,6 @@ function SuperAdmin({ nav }) {
         </div>}
       </div>
 
-      {/* MODAL COMPROBANTE */}
       {abonoModal && (
         <div className="overlay fade" onClick={e => e.target === e.currentTarget && setAbonoModal(null)}>
           <div className="modal">
@@ -1225,7 +1194,6 @@ function SuperAdmin({ nav }) {
             <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid var(--border)", padding: 40, textAlign: "center", marginBottom: 20 }}>
               <div style={{ fontSize: 40, marginBottom: 8 }}>📄</div>
               <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 15, fontStyle: "italic", color: "var(--muted)" }}>{abonoModal.comprobante}</div>
-              <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 6 }}>(En producción se mostraría la imagen real)</div>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button className="act-btn s" style={{ flex: 1, padding: "12px 0", fontSize: 12 }} onClick={() => { aprobAbono(abonoModal.id); setAbonoModal(null); }}>✓ Aprobar Abono</button>
@@ -1239,17 +1207,14 @@ function SuperAdmin({ nav }) {
 }
 
 // ─────────────────────────────────────────────
-// PIN LOGIN → BARBERO PANEL
+// PIN LOGIN → BARBERO
 // ─────────────────────────────────────────────
 function PinLogin({ onSuccess }) {
   const [barbSelId, setBarbSelId] = useState(null);
   const [pin, setPin] = useState("");
   const [err, setErr] = useState("");
 
-  const pressKey = k => {
-    if (pin.length < 4) setPin(p => p + k);
-    setErr("");
-  };
+  const pressKey = k => { if (pin.length < 4) setPin(p => p + k); setErr(""); };
   const del = () => setPin(p => p.slice(0, -1));
   const verificar = () => {
     const b = BARBEROS.find(x => x.id === barbSelId);
@@ -1262,7 +1227,6 @@ function PinLogin({ onSuccess }) {
       <div className="pin-card fade">
         <div className="pin-logo">Barber<br />Boss</div>
         <div className="pin-sub">Acceso Barbero</div>
-
         <div style={{ fontSize: 10, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 12, fontFamily: "'DM Sans',sans-serif" }}>Selecciona tu perfil</div>
         <div className="pin-barb-sel">
           {BARBEROS.map(b => (
@@ -1272,15 +1236,12 @@ function PinLogin({ onSuccess }) {
             </div>
           ))}
         </div>
-
         {barbSelId && (
           <>
             <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 15, fontStyle: "italic", color: "var(--gold)", marginBottom: 14 }}>
               {BARBEROS.find(b => b.id === barbSelId)?.nombre}
             </div>
-            <div className="pin-display">
-              {"●".repeat(pin.length)}{"·".repeat(4 - pin.length)}
-            </div>
+            <div className="pin-display">{"●".repeat(pin.length)}{"·".repeat(4 - pin.length)}</div>
             <div className="pin-grid">
               {[1,2,3,4,5,6,7,8,9].map(n => (
                 <button key={n} className="pin-key" onClick={() => pressKey(String(n))}>{n}</button>
@@ -1322,7 +1283,6 @@ function BarberoPanel({ barbero, onLogout }) {
         <button style={{ marginLeft: 16, background: "none", border: "1px solid var(--border)", color: "var(--muted)", padding: "7px 14px", cursor: "pointer", fontSize: 11, letterSpacing: 1, fontFamily: "'DM Sans',sans-serif" }} onClick={onLogout}>Salir</button>
       </div>
       <div className="bp-body">
-
         {tab === "citas" && <div className="fade">
           <div style={{ marginBottom: 22 }}>
             <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 700, fontStyle: "italic" }}>Mis Citas de Hoy</div>
@@ -1442,14 +1402,9 @@ function Monitor() {
             </div>
             <div>
               <div className="mon-label">{b.estado === "ocupado" ? "En Silla" : "Próxima Cita"}</div>
-              {b.estado === "ocupado" && b.proximoCliente
-                ? <div className="mon-cliente">{b.proximoCliente}</div>
-                : b.proximoCliente
-                  ? <>
-                      <div className="mon-cliente">{b.proximoCliente}</div>
-                      <div className="mon-hora">{b.proximaCita}</div>
-                    </>
-                  : <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, fontStyle: "italic", color: "var(--muted)" }}>Sin reservas</div>
+              {b.proximoCliente
+                ? <><div className="mon-cliente">{b.proximoCliente}</div><div className="mon-hora">{b.proximaCita}</div></>
+                : <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, fontStyle: "italic", color: "var(--muted)" }}>Sin reservas</div>
               }
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "auto" }}>
@@ -1502,10 +1457,7 @@ function Monitor() {
                       <div style={{ width: 28, height: 28, borderRadius: "50%", background: b.color, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 700, color: "#000" }}>{b.iniciales}</div>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 600 }}>{b.nombre.split(" ")[0]}</div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: b.estado === "libre" ? "var(--libre)" : b.estado === "ocupado" ? "var(--ocupado)" : "var(--proximo)" }}>
-                          <div className="dot" style={{ background: b.estado === "libre" ? "var(--libre)" : b.estado === "ocupado" ? "var(--ocupado)" : "var(--proximo)", width: 5, height: 5 }} />
-                          {b.estado} · Cola {b.cola}
-                        </div>
+                        <div style={{ fontSize: 10, color: b.estado === "libre" ? "var(--libre)" : b.estado === "ocupado" ? "var(--ocupado)" : "var(--proximo)" }}>{b.estado} · Cola {b.cola}</div>
                       </div>
                     </div>
                   </div>
@@ -1523,7 +1475,7 @@ function Monitor() {
 }
 
 // ─────────────────────────────────────────────
-// SELECTOR INICIAL
+// SELECTOR
 // ─────────────────────────────────────────────
 function Selector({ onSelect }) {
   return (
@@ -1557,38 +1509,36 @@ function Selector({ onSelect }) {
 // ─────────────────────────────────────────────
 export default function App() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [initData, setInitData] = useState({});
   const [barberoLogueado, setBarberoLogueado] = useState(null);
 
   const routeMap = {
-    "/":        "home",
-    "/reservas":"reservas",
-    "/admin":   "admin",
-    "/barbero": barberoLogueado ? "barbero" : "pin",
-    "/monitor": "monitor",
-    "/selector":"selector",
+    "/":         "home",
+    "/reservas": "reservas",
+    "/admin":    "admin",
+    "/barbero":  barberoLogueado ? "barbero" : "pin",
+    "/monitor":  "monitor",
+    "/selector": "selector",
   };
 
   const view = routeMap[location.pathname] || "home";
-  const navigate = useNavigate();
+
   const nav = (v, data = {}) => {
     setInitData(data);
     const pathMap = {
-      home:"/" , reservas:"/reservas", admin:"/admin",
-      pin:"/barbero", barbero:"/barbero", monitor:"/monitor", selector:"/selector"
+      home: "/", reservas: "/reservas", admin: "/admin",
+      pin: "/barbero", barbero: "/barbero", monitor: "/monitor", selector: "/selector"
     };
     navigate(pathMap[v] || "/");
   };
 
-
-  // Nav visible solo en home y reservas (vistas públicas)
   const showNav = ["home", "reservas"].includes(view);
 
   return (
     <div style={{ background: "#000", minHeight: "100vh" }}>
       <style>{CSS}</style>
 
-      {/* NAV solo en vistas públicas */}
       {showNav && (
         <nav className="nav">
           <div className="nav-logo" onClick={() => nav("home")}>Barber<span>Boss</span></div>
@@ -1598,10 +1548,9 @@ export default function App() {
         </nav>
       )}
 
-      {/* Botón "Menú" discreto en vistas privadas */}
       {!showNav && view !== "selector" && (
         <div style={{ position: "fixed", top: 16, right: 16, zIndex: 300 }}>
-          <button onClick={() => { setBarberoLogueado(null); setView("selector"); }}
+          <button onClick={() => { setBarberoLogueado(null); nav("selector"); }}
             style={{ background: "rgba(0,0,0,.7)", border: "1px solid rgba(255,255,255,.1)", color: "var(--muted)", padding: "7px 14px", cursor: "pointer", fontSize: 11, letterSpacing: 1, fontFamily: "'DM Sans',sans-serif", backdropFilter: "blur(10px)" }}>
             ← Menú
           </button>
@@ -1611,10 +1560,10 @@ export default function App() {
       {view === "selector" && <Selector onSelect={v => { setBarberoLogueado(null); nav(v); }} />}
       {view === "home"     && <Home onNav={nav} />}
       {view === "reservas" && <Reservas initData={initData} />}
-      {view === "admin"    && <SuperAdmin />}
+      {view === "admin"    && <SuperAdmin nav={nav} />}
       {view === "monitor"  && <Monitor />}
-      {view === "pin"      && !barberoLogueado && <PinLogin onSuccess={b => { setBarberoLogueado(b); setView("barbero"); }} />}
-      {view === "barbero"  && barberoLogueado  && <BarberoPanel barbero={barberoLogueado} onLogout={() => { setBarberoLogueado(null); setView("pin"); }} />}
+      {view === "pin"      && !barberoLogueado && <PinLogin onSuccess={b => { setBarberoLogueado(b); navigate("/barbero"); }} />}
+      {view === "barbero"  && barberoLogueado  && <BarberoPanel barbero={barberoLogueado} onLogout={() => { setBarberoLogueado(null); navigate("/barbero"); }} />}
     </div>
   );
 }
