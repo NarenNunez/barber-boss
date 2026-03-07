@@ -837,6 +837,7 @@ function SuperAdmin({ nav }) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);
   const [seccion, setSeccion] = useState("dashboard");
+  const [reservas, setReservas] = useState([]);
   const PIN_ADMIN = "0000";
 
   const verificarPin = (digito) => {
