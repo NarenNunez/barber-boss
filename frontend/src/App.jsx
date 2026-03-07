@@ -832,11 +832,11 @@ function Reservas({ initData = {} }) {
 // ─────────────────────────────────────────────
 // SUPER ADMIN
 // ─────────────────────────────────────────────
-function SuperAdmin() {
-  const [tab, setTab] = useState("dashboard");
-  const [reservas, setReservas] = useState(RESERVAS_INIT);
-  const [abonoModal, setAbonoModal] = useState(null);
-  const PIN_ADMIN = "0000"; // cambia este PIN por el que quieras
+function SuperAdmin({ nav }) {
+  const [autenticado, setAutenticado] = useState(false);
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState(false);
+  const PIN_ADMIN = "0000";
 
   const verificarPin = (digito) => {
     const nuevo = pin + digito;
@@ -851,6 +851,37 @@ function SuperAdmin() {
       }
     }
   };
+
+  if (!autenticado) return (
+    <div style={{ minHeight:"100vh", background:"#080808", display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <div style={{ background:"#141414", border:"1px solid rgba(255,255,255,.08)", padding:"48px 40px", width:340, textAlign:"center" }}>
+        <div style={{ fontFamily:"'Playfair Display',serif", fontSize:28, fontStyle:"italic", fontWeight:900, color:"#D4AF37", marginBottom:8 }}>Admin</div>
+        <div style={{ fontSize:12, color:"#666", letterSpacing:2, textTransform:"uppercase", marginBottom:32 }}>Ingresa tu PIN</div>
+        <div style={{ display:"flex", justifyContent:"center", gap:16, marginBottom:32 }}>
+          {[0,1,2,3].map(i => (
+            <div key={i} style={{ width:14, height:14, borderRadius:"50%", background: pin.length > i ? (error ? "#EF4444" : "#D4AF37") : "rgba(255,255,255,.1)", transition:"all .2s" }} />
+          ))}
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:10 }}>
+          {[1,2,3,4,5,6,7,8,9].map(n => (
+            <button key={n} onClick={() => pin.length < 4 && verificarPin(String(n))}
+              style={{ padding:"18px 0", background:"#1A1A1A", border:"1px solid rgba(255,255,255,.07)", color:"#fff", fontSize:20, fontWeight:600, cursor:"pointer", borderRadius:2 }}>
+              {n}
+            </button>
+          ))}
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+          <button onClick={() => setPin(p => p.slice(0,-1))}
+            style={{ padding:"18px 0", background:"#1A1A1A", border:"1px solid rgba(255,255,255,.07)", color:"#888", fontSize:14, cursor:"pointer", borderRadius:2 }}>⌫</button>
+          <button onClick={() => pin.length < 4 && verificarPin("0")}
+            style={{ padding:"18px 0", background:"#1A1A1A", border:"1px solid rgba(255,255,255,.07)", color:"#fff", fontSize:20, fontWeight:600, cursor:"pointer", borderRadius:2 }}>0</button>
+        </div>
+        {error && <div style={{ marginTop:16, fontSize:12, color:"#EF4444", letterSpacing:1 }}>PIN incorrecto</div>}
+      </div>
+    </div>
+  );
+
+  const [seccion, setSeccion] = useState("dashboard");
 
   if (!autenticado) return (
     <div style={{ minHeight:"100vh", background:"#080808", display:"flex", alignItems:"center", justifyContent:"center" }}>
