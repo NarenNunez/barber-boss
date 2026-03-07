@@ -832,10 +832,11 @@ function Reservas({ initData = {} }) {
 // ─────────────────────────────────────────────
 // SUPER ADMIN
 // ─────────────────────────────────────────────
-function SuperAdmin() {
-    const [autenticado, setAutenticado] = useState(false);
+function SuperAdmin({ nav }) {
+  const [autenticado, setAutenticado] = useState(false);
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);
+  const [seccion, setSeccion] = useState("dashboard");
   const PIN_ADMIN = "0000";
 
   const verificarPin = (digito) => {
@@ -880,9 +881,6 @@ function SuperAdmin() {
       </div>
     </div>
   );
-  const [tab, setTab] = useState("dashboard");
-  const [reservas, setReservas] = useState(RESERVAS_INIT);
-  const [abonoModal, setAbonoModal] = useState(null);
 
   if (!autenticado) return (
     <div style={{ minHeight:"100vh", background:"#080808", display:"flex", alignItems:"center", justifyContent:"center" }}>
