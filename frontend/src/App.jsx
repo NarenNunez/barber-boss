@@ -268,7 +268,7 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .info-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0}
 .info-val{font-weight:600;color:var(--text)}
 
-.admin{min-height:100vh;display:flex;padding-top:60px;background:var(--dark)}
+.admin{min-height:100vh;display:flex;padding-top:0px;background:var(--dark)}
 .sidebar{width:210px;min-height:calc(100vh - 60px);background:#0D0D0D;border-right:1px solid var(--border);padding:20px 0;position:sticky;top:60px;flex-shrink:0}
 .sb-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);padding:0 16px;margin-bottom:6px;margin-top:20px;font-family:'DM Sans',sans-serif}
 .sb-item{
