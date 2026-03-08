@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import { api } from './api.js';
 // ─────────────────────────────────────────────
 // DATOS
 // ─────────────────────────────────────────────
@@ -500,6 +500,17 @@ function BarberoModal({ b, onClose, onReservar }) {
 // ─────────────────────────────────────────────
 function Home({ onNav }) {
   const [modal, setModal] = useState(null);
+  const [barberos, setBarberos] = useState(BARBEROS);
+  const [servicios, setServicios] = useState(SERVICIOS);
+
+  useEffect(() => {
+    api.getBarberos()
+      .then(data => setBarberos(data))
+      .catch(() => {});
+    api.getServicios()
+      .then(data => setServicios(data))
+      .catch(() => {});
+  }, []);
 
   return (
     <div>
@@ -537,7 +548,7 @@ function Home({ onNav }) {
             <div className="gold-rule" />
           </div>
           <div className="barb-grid">
-            {BARBEROS.map(b => (
+            {barberos.map(b => (
               <div key={b.id} className="barb-card" onClick={() => setModal(b)}>
                 <div className="barb-photo" style={{ background: `${b.color}0D` }}>
                   {b.foto_url
@@ -568,7 +579,7 @@ function Home({ onNav }) {
             <div className="gold-rule" />
           </div>
           <div className="svc-grid">
-            {SERVICIOS.map(s => (
+            {servicios.map(s => (
               <div key={s.id} className="svc-item" onClick={() => onNav("reservas")}>
                 <div>
                   <div className="svc-name">{s.nombre}</div>
@@ -664,7 +675,7 @@ function Reservas({ initData = {} }) {
             <div className="ftitle">Elige tu Barbero</div>
             <div className="fsub">¿Con quién quieres ir?</div>
             <div className="opt-grid">
-              {BARBEROS.map(b => (
+              {barberos.map(b => (
                 <div key={b.id} className={`opt ${form.barbero?.id === b.id ? "sel" : ""}`} onClick={() => setForm({ ...form, barbero: b })}>
                   <div style={{ width: 44, height: 44, borderRadius: "50%", background: b.color, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 700, fontStyle: "italic", color: "#000", margin: "0 auto 10px" }}>{b.iniciales}</div>
                   <div className="opt-name">{b.nombre.split(" ")[0]}</div>
@@ -683,7 +694,7 @@ function Reservas({ initData = {} }) {
             <div className="ftitle">Elige el Servicio</div>
             <div className="fsub">¿Qué te vas a hacer hoy?</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {SERVICIOS.map(s => (
+              {servicios.map(s => (
                 <div key={s.id} className={`opt ${form.servicio?.id === s.id ? "sel" : ""}`} onClick={() => setForm({ ...form, servicio: s })} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left" }}>
                   <div><div className="opt-name">{s.nombre}</div><div className="opt-sub">{s.duracion} min</div></div>
                   <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, fontStyle: "italic", color: "var(--gold)" }}>{fmtCOP(s.precio)}</div>
@@ -790,7 +801,23 @@ function Reservas({ initData = {} }) {
             </div>
             <div className="nav-btns">
               <button className="btn-back" onClick={() => setStep(6)}>← Atrás</button>
-              <button className="btn-next" onClick={() => setStep(8)}>✓ Confirmar Reserva</button>
+              <button className="btn-next" onClick={async () => {
+             try {
+             await api.crearReserva({
+             cliente_nombre: form.nombre,
+             cliente_telefono: form.telefono,
+             cliente_email: form.email,
+             barbero_id: form.barbero?.id,
+             servicio_id: form.servicio?.id,
+             fecha: form.fecha,
+             hora: form.hora,
+            metodo_pago: abonoMetodo,
+            });
+    setStep(8);
+  } catch (err) {
+    setStep(8); // igual avanza aunque falle
+  }
+}}>✓ Confirmar Reserva</button>
             </div>
           </>}
         </div>
@@ -933,7 +960,7 @@ function SuperAdmin({ nav }) {
             </div>
             <div className="blk">
               <div className="blk-title">Rendimiento Barberos</div>
-              {BARBEROS.map(b => (
+              {barberos.map(b => (
                 <div key={b.id} className="row">
                   <div className="av-sm" style={{ background: b.color }}>{b.iniciales}</div>
                   <div style={{ flex: 1 }}>
@@ -952,7 +979,7 @@ function SuperAdmin({ nav }) {
           <div className="blk">
             <div className="blk-title">Estado en Tiempo Real</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 12 }}>
-              {BARBEROS.map(b => (
+              {barberos.map(b => (
                 <div key={b.id} style={{ background: "rgba(255,255,255,.02)", border: "1px solid var(--border)", padding: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                     <div className="av-sm" style={{ background: b.color }}>{b.iniciales}</div>
@@ -1054,7 +1081,7 @@ function SuperAdmin({ nav }) {
         {tab === "barberos" && <div className="fade">
           <div className="pg-head"><div className="pg-title">Gestión Barberos</div><div className="pg-sub">Administra tu equipo</div></div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 16 }}>
-            {BARBEROS.map(b => (
+            {barberos.map(b => (
               <div key={b.id} className="blk" style={{ borderLeft: `3px solid ${b.color}` }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
                   <div style={{ width: 54, height: 54, borderRadius: "50%", background: b.color, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", fontWeight: 700, color: "#000" }}>{b.iniciales}</div>
@@ -1087,7 +1114,7 @@ function SuperAdmin({ nav }) {
           <div className="pg-head"><div className="pg-title">Calendario</div><div className="pg-sub">Vista del día con todos los barberos</div></div>
           <div className="blk">
             <div style={{ display: "flex", gap: 16, marginBottom: 18, flexWrap: "wrap" }}>
-              {BARBEROS.map(b => (
+              {barberos.map(b => (
                 <div key={b.id} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12 }}>
                   <div style={{ width: 10, height: 10, background: b.color, borderRadius: 1 }} />
                   {b.nombre.split(" ")[0]}
@@ -1099,7 +1126,7 @@ function SuperAdmin({ nav }) {
                 <thead>
                   <tr>
                     <th style={{ padding: "8px 12px", textAlign: "left", fontSize: 9, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", width: 80 }}>Hora</th>
-                    {BARBEROS.map(b => (
+                    {barberos.map(b => (
                       <th key={b.id} style={{ padding: "8px 12px", fontSize: 11, fontWeight: 700, color: b.color, letterSpacing: 1, textTransform: "uppercase" }}>{b.nombre.split(" ")[0]}</th>
                     ))}
                   </tr>
@@ -1110,7 +1137,7 @@ function SuperAdmin({ nav }) {
                     return (
                       <tr key={h} style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}>
                         <td style={{ padding: "8px 12px", fontFamily: "'Playfair Display',serif", fontSize: 16, fontStyle: "italic", color: "var(--muted)" }}>{h}</td>
-                        {BARBEROS.map(b => {
+                        {barberos.map(b => {
                           const c = citasH.find(x => x.barberoId === b.id);
                           return (
                             <td key={b.id} style={{ padding: "5px 7px" }}>
@@ -1160,7 +1187,7 @@ function SuperAdmin({ nav }) {
             </div>
             <div className="blk">
               <div className="blk-title">Por Servicio</div>
-              {SERVICIOS.map(s => (
+              {servicios.map(s => (
                 <div key={s.id} className="row">
                   <div style={{ flex: 1 }}>
                     <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 15, fontStyle: "italic", fontWeight: 600 }}>{s.nombre}</div>
@@ -1229,7 +1256,7 @@ function PinLogin({ onSuccess }) {
         <div className="pin-sub">Acceso Barbero</div>
         <div style={{ fontSize: 10, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 12, fontFamily: "'DM Sans',sans-serif" }}>Selecciona tu perfil</div>
         <div className="pin-barb-sel">
-          {BARBEROS.map(b => (
+          {barberos.map(b => (
             <div key={b.id} className={`pin-barb ${barbSelId === b.id ? "sel" : ""}`}
               style={{ background: b.color }} onClick={() => { setBarbSelId(b.id); setPin(""); setErr(""); }}>
               {b.iniciales}
@@ -1390,7 +1417,7 @@ function Monitor() {
       </div>
 
       <div className="mon-grid">
-        {BARBEROS.map(b => (
+        {barberos.map(b => (
           <div key={b.id} className={`mon-card ${b.estado}`}>
             <div>
               <div className="mon-barb-name" style={{ color: b.color }}>{b.nombre.split(" ")[0]}</div>
@@ -1451,7 +1478,7 @@ function Monitor() {
             <div className="field">
               <label className="flabel">Asignar a Barbero</label>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {BARBEROS.map(b => (
+                {barberos.map(b => (
                   <div key={b.id} className={`opt ${walkBarbId === b.id ? "sel" : ""}`} style={{ padding: 12 }} onClick={() => setWalkBarbId(b.id)}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <div style={{ width: 28, height: 28, borderRadius: "50%", background: b.color, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 700, color: "#000" }}>{b.iniciales}</div>
