@@ -601,9 +601,25 @@ function Home({ onNav }) {
 }
 
 // ─────────────────────────────────────────────
+
+function StepBar({ step, labels }) {
+  return (
+    <div className="steps">
+      {labels.map((s, i) => (
+        <div key={s} style={{ display: "flex", alignItems: "center" }}>
+          <div className={`step ${i + 1 < step ? "done" : ""} ${i + 1 === step ? "active" : ""}`}>
+            <div className="step-n">{i + 1 < step ? "?" : i + 1}</div>
+            <span>{s}</span>
+          </div>
+          {i < labels.length - 1 && <div className="step-line" />}
+        </div>
+      ))}
+    </div>
+  );
+}
 // RESERVAS
 // ─────────────────────────────────────────────
-function Reservas({ initData = {} }) {
+function Reservas({ initData = {}, barberos, servicios }) {
   const [step, setStep] = useState(initData.barbero ? 2 : 1);
   const [form, setForm] = useState({ nombre: "", telefono: "", email: "", barbero: initData.barbero || null, servicio: null, fecha: "", hora: "" });
   const [abonoMetodo, setAbonoMetodo] = useState("nequi");
@@ -611,20 +627,6 @@ function Reservas({ initData = {} }) {
   const fileRef = useRef();
 
   const STEP_LABELS = ["Datos", "Barbero", "Servicio", "Fecha", "Hora", "Abono", "Confirmar"];
-
-  const StepBar = () => (
-    <div className="steps">
-      {STEP_LABELS.map((s, i) => (
-        <div key={s} style={{ display: "flex", alignItems: "center" }}>
-          <div className={`step ${i + 1 < step ? "done" : ""} ${i + 1 === step ? "active" : ""}`}>
-            <div className="step-n">{i + 1 < step ? "✓" : i + 1}</div>
-            <span>{s}</span>
-          </div>
-          {i < STEP_LABELS.length - 1 && <div className="step-line" />}
-        </div>
-      ))}
-    </div>
-  );
 
   if (step === 8) return (
     <div className="res-page">
@@ -655,7 +657,7 @@ function Reservas({ initData = {} }) {
           <div className="res-title">Reservar Cita</div>
           <div className="res-sub">Barber Boss · Sistema de Reservas</div>
         </div>
-        <StepBar />
+        <StepBar step={step} labels={STEP_LABELS} />
         <div className="fcard fade" key={step}>
           {step === 1 && <>
             <div className="ftitle">Tus Datos</div>
@@ -814,7 +816,7 @@ function Reservas({ initData = {} }) {
             metodo_pago: abonoMetodo,
             });
     setStep(8);
-  } catch (err) {
+  } catch {
     setStep(8); // igual avanza aunque falle
   }
 }}>✓ Confirmar Reserva</button>
@@ -829,7 +831,7 @@ function Reservas({ initData = {} }) {
 // ─────────────────────────────────────────────
 // SUPER ADMIN
 // ─────────────────────────────────────────────
-function SuperAdmin({ nav }) {
+function SuperAdmin({ barberos, servicios }) {
   const [autenticado, setAutenticado] = useState(false);
   const [pinAdmin, setPinAdmin] = useState("");
   const [errorAdmin, setErrorAdmin] = useState(false);
@@ -1187,14 +1189,14 @@ function SuperAdmin({ nav }) {
             </div>
             <div className="blk">
               <div className="blk-title">Por Servicio</div>
-              {servicios.map(s => (
+              {servicios.map((s, i) => (
                 <div key={s.id} className="row">
                   <div style={{ flex: 1 }}>
                     <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 15, fontStyle: "italic", fontWeight: 600 }}>{s.nombre}</div>
                     <div style={{ fontSize: 11, color: "var(--muted)" }}>{s.duracion} min</div>
                   </div>
                   <div className="prog" style={{ width: 80 }}>
-                    <div className="prog-fill" style={{ width: `${Math.floor(Math.random() * 60 + 30)}%`, background: "var(--gold)" }} />
+                    <div className="prog-fill" style={{ width: `${30 + ((i * 17) % 61)}%`, background: "var(--gold)" }} />
                   </div>
                 </div>
               ))}
@@ -1236,7 +1238,7 @@ function SuperAdmin({ nav }) {
 // ─────────────────────────────────────────────
 // PIN LOGIN → BARBERO
 // ─────────────────────────────────────────────
-function PinLogin({ onSuccess }) {
+function PinLogin({ onSuccess, barberos }) {
   const [barbSelId, setBarbSelId] = useState(null);
   const [pin, setPin] = useState("");
   const [err, setErr] = useState("");
@@ -1393,7 +1395,7 @@ function BarberoPanel({ barbero, onLogout }) {
 // ─────────────────────────────────────────────
 // MONITOR
 // ─────────────────────────────────────────────
-function Monitor() {
+function Monitor({ barberos }) {
   const [showWalk, setShowWalk] = useState(false);
   const [walkNombre, setWalkNombre] = useState("");
   const [walkBarbId, setWalkBarbId] = useState(null);
@@ -1539,6 +1541,8 @@ export default function App() {
   const navigate = useNavigate();
   const [initData, setInitData] = useState({});
   const [barberoLogueado, setBarberoLogueado] = useState(null);
+  const barberos = BARBEROS;
+  const servicios = SERVICIOS;
 
   const routeMap = {
     "/":         "home",
@@ -1585,12 +1589,21 @@ export default function App() {
       )}
 
       {view === "selector" && <Selector onSelect={v => { setBarberoLogueado(null); nav(v); }} />}
-      {view === "home"     && <Home onNav={nav} />}
-      {view === "reservas" && <Reservas initData={initData} />}
-      {view === "admin"    && <SuperAdmin nav={nav} />}
-      {view === "monitor"  && <Monitor />}
-      {view === "pin"      && !barberoLogueado && <PinLogin onSuccess={b => { setBarberoLogueado(b); navigate("/barbero"); }} />}
-      {view === "barbero"  && barberoLogueado  && <BarberoPanel barbero={barberoLogueado} onLogout={() => { setBarberoLogueado(null); navigate("/barbero"); }} />}
+      {view === "home"     && <Home onNav={nav} barberos={barberos} servicios={servicios} />}
+      {view === "reservas" && <Reservas initData={initData} barberos={barberos} servicios={servicios} />}
+      {view === "admin"    && <SuperAdmin nav={nav} barberos={barberos} servicios={servicios} />}
+      {view === "monitor"  && <Monitor barberos={barberos} />}
+      {view === "pin"      && !barberoLogueado && <PinLogin onSuccess={b => { setBarberoLogueado(b); navigate("/barbero"); }} barberos={barberos} />}
+      {view === "barbero"  && barberoLogueado  && <BarberoPanel barbero={barberoLogueado} onLogout={() => { setBarberoLogueado(null); navigate("/barbero"); }} barberos={barberos} />}
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
