@@ -883,7 +883,7 @@ function SuperAdmin({ barberos, servicios }) {
     </div>
   );
 
-  const totalHoy = BARBEROS.reduce((a, b) => a + b.serviciosHoy, 0);
+  const totalHoy = barberos.reduce((a, b) => a + b.serviciosHoy, 0);
   const pendAbono = reservas.filter(r => r.abonoEstado === "pendiente").length;
 
   const SB = [
@@ -946,7 +946,7 @@ function SuperAdmin({ barberos, servicios }) {
             <div className="blk">
               <div className="blk-title">Citas de Hoy</div>
               {reservas.slice(0, 5).map(r => {
-                const b = BARBEROS.find(x => x.id === r.barberoId);
+                const b = barberos.find(x => x.id === r.barberoId);
                 return (
                   <div key={r.id} className="row">
                     <div className="dot" style={{ background: b?.color }} />
@@ -1017,7 +1017,7 @@ function SuperAdmin({ barberos, servicios }) {
               </thead>
               <tbody>
                 {reservas.map(r => {
-                  const b = BARBEROS.find(x => x.id === r.barberoId);
+                  const b = barberos.find(x => x.id === r.barberoId);
                   return (
                     <tr key={r.id}>
                       <td><div style={{ fontWeight: 600 }}>{r.cliente}</div><div style={{ fontSize: 11, color: "var(--muted)" }}>📱 {r.telefono}</div></td>
@@ -1056,7 +1056,7 @@ function SuperAdmin({ barberos, servicios }) {
               <thead><tr><th>Hora</th><th>Cliente</th><th>Barbero</th><th>Servicio</th><th>Abono</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody>
                 {reservas.map(r => {
-                  const b = BARBEROS.find(x => x.id === r.barberoId);
+                  const b = barberos.find(x => x.id === r.barberoId);
                   return (
                     <tr key={r.id}>
                       <td style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", color: "var(--gold)" }}>{r.hora}</td>
@@ -1173,7 +1173,7 @@ function SuperAdmin({ barberos, servicios }) {
           <div className="g2">
             <div className="blk">
               <div className="blk-title">Ranking Barberos (Hoy)</div>
-              {[...BARBEROS].sort((a, b) => b.serviciosHoy - a.serviciosHoy).map((b, i) => (
+              {[...barberos].sort((a, b) => b.serviciosHoy - a.serviciosHoy).map((b, i) => (
                 <div key={b.id} className="row">
                   <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: i === 0 ? "var(--gold)" : "var(--muted)", width: 28 }}>#{i + 1}</div>
                   <div className="av-sm" style={{ background: b.color }}>{b.iniciales}</div>
@@ -1246,7 +1246,7 @@ function PinLogin({ onSuccess, barberos }) {
   const pressKey = k => { if (pin.length < 4) setPin(p => p + k); setErr(""); };
   const del = () => setPin(p => p.slice(0, -1));
   const verificar = () => {
-    const b = BARBEROS.find(x => x.id === barbSelId);
+    const b = barberos.find(x => x.id === barbSelId); // ← FIXED: era BARBEROS.find
     if (b && pin === b.pin) { onSuccess(b); }
     else { setErr("PIN incorrecto. Intenta de nuevo."); setPin(""); }
   };
@@ -1268,7 +1268,7 @@ function PinLogin({ onSuccess, barberos }) {
         {barbSelId && (
           <>
             <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 15, fontStyle: "italic", color: "var(--gold)", marginBottom: 14 }}>
-              {BARBEROS.find(b => b.id === barbSelId)?.nombre}
+              {barberos.find(b => b.id === barbSelId)?.nombre}
             </div>
             <div className="pin-display">{"●".repeat(pin.length)}{"·".repeat(4 - pin.length)}</div>
             <div className="pin-grid">
@@ -1291,7 +1291,7 @@ function PinLogin({ onSuccess, barberos }) {
 // ─────────────────────────────────────────────
 // BARBERO PANEL
 // ─────────────────────────────────────────────
-function BarberoPanel({ barbero, onLogout }) {
+function BarberoPanel({ barbero, onLogout, barberos }) {
   const [tab, setTab] = useState("citas");
   const [reservas, setReservas] = useState(RESERVAS_INIT);
   const misCitas = reservas.filter(r => r.barberoId === barbero.id);
@@ -1354,7 +1354,7 @@ function BarberoPanel({ barbero, onLogout }) {
           </div>
           <div className="blk">
             <div className="blk-title">Ranking del Equipo</div>
-            {[...BARBEROS].sort((a, b) => b.serviciosHoy - a.serviciosHoy).map((b, i) => (
+            {[...barberos].sort((a, b) => b.serviciosHoy - a.serviciosHoy).map((b, i) => (
               <div key={b.id} className="row">
                 <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: i === 0 ? "var(--gold)" : "var(--muted)", width: 28 }}>#{i + 1}</div>
                 <div className="av-sm" style={{ background: b.color, border: b.id === barbero.id ? "2px solid var(--gold)" : "none" }}>{b.iniciales}</div>
@@ -1400,7 +1400,7 @@ function Monitor({ barberos }) {
   const [walkNombre, setWalkNombre] = useState("");
   const [walkBarbId, setWalkBarbId] = useState(null);
   const now = new Date();
-  const totalHoy = BARBEROS.reduce((a, b) => a + b.serviciosHoy, 0);
+  const totalHoy = barberos.reduce((a, b) => a + b.serviciosHoy, 0);
 
   return (
     <div className="monitor">
@@ -1453,11 +1453,11 @@ function Monitor({ barberos }) {
       <div className="mon-footer">
         <div style={{ display: "flex", gap: 28 }}>
           <div className="mon-stat"><strong>Hoy:</strong> {totalHoy} clientes</div>
-          <div className="mon-stat"><strong>Cola total:</strong> {BARBEROS.reduce((a, b) => a + b.cola, 0)} personas</div>
+          <div className="mon-stat"><strong>Cola total:</strong> {barberos.reduce((a, b) => a + b.cola, 0)} personas</div>
         </div>
         <div className="mon-prox-list">
           {RESERVAS_INIT.filter(r => r.estado === "pendiente").slice(0, 3).map(r => {
-            const b = BARBEROS.find(x => x.id === r.barberoId);
+            const b = barberos.find(x => x.id === r.barberoId);
             return (
               <div key={r.id} className="mon-prox-item">
                 <strong>{r.hora}</strong> · {r.cliente.split(" ")[0]} → <span style={{ color: b?.color }}>{b?.nombre.split(" ")[0]}</span>
@@ -1598,12 +1598,3 @@ export default function App() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
