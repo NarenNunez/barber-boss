@@ -852,7 +852,12 @@ function SuperAdmin({ barberos, servicios }) {
   const [pinAdmin, setPinAdmin] = useState("");
   const [errorAdmin, setErrorAdmin] = useState(false);
   const [tab, setTab] = useState("dashboard");
-  const [reservas, setReservas] = useState(RESERVAS_INIT);
+  const [reservas, setReservas] = useState([]);
+  const hoy = new Date().toISOString().split('T')[0];
+
+  useEffect(() => {
+    api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
+  }, []);
   const [abonoModal, setAbonoModal] = useState(null);
   const PIN_ADMIN = "0000"; // ← Cambia este PIN por el que quieras
 
@@ -911,11 +916,26 @@ function SuperAdmin({ barberos, servicios }) {
     { id: "reportes",  icon: "📈", label: "Reportes" },
   ];
 
-  const aprobAbono = id => setReservas(p => p.map(r => r.id === id ? { ...r, abonoEstado: "aprobado", estado: "pendiente" } : r));
-  const rechAbono  = id => setReservas(p => p.map(r => r.id === id ? { ...r, abonoEstado: "rechazado" } : r));
-  const iniciar    = id => setReservas(p => p.map(r => r.id === id ? { ...r, estado: "en_curso" } : r));
-  const completar  = id => setReservas(p => p.map(r => r.id === id ? { ...r, estado: "completado" } : r));
-  const cancelar   = id => setReservas(p => p.map(r => r.id === id ? { ...r, estado: "cancelado" } : r));
+const aprobAbono = async id => {
+    await api.actualizarAbono(id, 'aprobado');
+    setReservas(p => p.map(r => r.id === id ? { ...r, abono_estado: "aprobado" } : r));
+  };
+  const rechAbono = async id => {
+    await api.actualizarAbono(id, 'rechazado');
+    setReservas(p => p.map(r => r.id === id ? { ...r, abono_estado: "rechazado" } : r));
+  };
+  const iniciar = async id => {
+    await api.actualizarEstadoReserva(id, 'en_curso');
+    setReservas(p => p.map(r => r.id === id ? { ...r, estado: "en_curso" } : r));
+  };
+  const completar = async id => {
+    await api.actualizarEstadoReserva(id, 'completado');
+    setReservas(p => p.map(r => r.id === id ? { ...r, estado: "completado" } : r));
+  };
+  const cancelar = async id => {
+    await api.actualizarEstadoReserva(id, 'cancelado');
+    setReservas(p => p.map(r => r.id === id ? { ...r, estado: "cancelado" } : r));
+  };
 
   return (
     <div className="admin">
