@@ -819,38 +819,23 @@ function Reservas({ initData = {}, barberos, servicios }) {
             <div className="nav-btns">
               <button className="btn-back" onClick={() => setStep(6)}>← Atrás</button>
               <button className="btn-next" onClick={async () => {
-             try {
-             await api.crearReserva({
-                  cliente_nombre:   form.nombre,
-                  cliente_telefono: form.telefono,
-                  cliente_email:    form.email,
-                  barbero_id:       form.barbero?.id,
-                  servicio_id:      form.servicio?.id,
-                  fecha_iso:        (() => {
-                    // Convierte "Lun 9 Mar" → "2026-03-09"
-                  const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-                  const partes = form.fecha.split(" "); // ["Lun", "9", "Mar"]
-                  const dia    = partes[1].padStart(2, "0");
-                  const mes    = String(meses.indexOf(partes[2]) + 1).padStart(2, "0");
-                  const anio   = new Date().getFullYear();
-                  return `${anio}-${mes}-${dia}`;
-                  })(),
-                 hora_inicio:      (() => {
-                   // Convierte "2:30 PM" → "14:30"
-                  const [hora, minAMPM] = form.hora.split(":");
-                 const [min, ampm]     = minAMPM.split(" ");
-                 let h = parseInt(hora);
-                 if (ampm === "PM" && h !== 12) h += 12;
-                 if (ampm === "AM" && h === 12) h = 0;
-                return `${String(h).padStart(2,"0")}:${min}`;
-                 })(),
-                 notas: `Abono vía ${abonoMetodo}`,
-            });
-    setStep(8);
-  } catch {
-    setStep(8); // igual avanza aunque falle
-  }
-}}>✓ Confirmar Reserva</button>
+                try {
+                  await api.crearReserva({
+                    cliente_nombre:   form.nombre,
+                    cliente_telefono: form.telefono,
+                    cliente_email:    form.email,
+                    barbero_id:       form.barbero?.id,
+                    servicio_id:      form.servicio?.id,
+                    fecha_iso:        form.fechaISO,
+                    hora_inicio:      form.hora24,
+                    notas:            `Abono vía ${abonoMetodo}`,
+                  });
+                  setStep(8);
+                } catch (err) {
+                  console.error('Error al crear reserva:', err);
+                  setStep(8);
+                }
+              }}>✓ Confirmar Reserva</button>
             </div>
           </>}
         </div>
