@@ -664,7 +664,7 @@ function Reservas({ initData = {}, barberos, servicios }) {
           {step === 1 && <>
             <div className="ftitle">Tus Datos</div>
             <div className="fsub">Necesitamos tus datos para confirmar la cita</div>
-            {[["Nombre Completo", "nombre", "Carlos Rodríguez", "text"], ["Teléfono / WhatsApp", "telefono", "3001234567", "tel"], ["Email (opcional)", "email", "correo@email.com", "email"]].map(([l, k, p, t]) => (
+            {[["Nombre Completo", "nombre", "Carlos Rodríguez", "text"], ["Teléfono / WhatsApp", "telefono", "3001234567", "tel"]].map(([l, k, p, t]) => (
               <div className="field" key={k}>
                 <label className="flabel">{l}</label>
                 <input className="finput" type={t} placeholder={p} value={form[k]} onChange={e => setForm({ ...form, [k]: e.target.value })} />

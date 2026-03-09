@@ -13,7 +13,6 @@ export function validate(req, res, next) {
 export const reservaRules = [
   body('cliente_nombre').trim().notEmpty().isLength({ min: 2, max: 100 }),
   body('cliente_tel').trim().notEmpty().matches(/^[0-9]{7,15}$/),
-  body('cliente_email').optional().isEmail().normalizeEmail(),
   body('barbero_id').isUUID(),
   body('servicio_id').isUUID(),
   body('fecha').isDate({ format: 'YYYY-MM-DD' }),
