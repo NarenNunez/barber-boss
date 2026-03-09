@@ -717,11 +717,14 @@ function Reservas({ initData = {}, barberos, servicios }) {
                 const d = new Date(); d.setDate(d.getDate() + i + 1);
                 const lbl = `${DIAS[d.getDay()].slice(0, 3)} ${d.getDate()} ${MESES[d.getMonth()]}`;
                 return (
-                  <div key={i} className={`day ${form.fecha === lbl ? "sel" : ""}`} onClick={() => setForm({ ...form, fecha: lbl })}>
-                    <div style={{ fontSize: 9, color: "inherit", letterSpacing: 1, opacity: .6, marginBottom: 2 }}>{DIAS[d.getDay()].slice(0, 3).toUpperCase()}</div>
-                    <div className="day-d">{d.getDate()}</div>
-                    <div className="day-m">{MESES[d.getMonth()]}</div>
-                  </div>
+                  <div key={i} className={`day ${form.fecha === lbl ? "sel" : ""}`} onClick={() => {
+                          const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                             setForm({ ...form, fecha: lbl, fechaISO: iso });
+                                  }}>
+                            <div style={{ fontSize: 9, color: "inherit", letterSpacing: 1, opacity: .6, marginBottom: 2 }}>{DIAS[d.getDay()].slice(0, 3).toUpperCase()}</div>
+                            <div className="day-d">{d.getDate()}</div>
+                            <div className="day-m">{MESES[d.getMonth()]}</div>
+                            </div>
                 );
               })}
             </div>
@@ -738,10 +741,20 @@ function Reservas({ initData = {}, barberos, servicios }) {
               {HORAS_DISP.map(h => {
                 const ocp = HORAS_OCUP.includes(h);
                 return (
-                  <div key={h} className={`hora ${form.hora === h ? "sel" : ""} ${ocp ? "ocp" : ""}`} onClick={() => !ocp && setForm({ ...form, hora: h })}>
-                    {h}
-                    {ocp && <div style={{ fontSize: 9, color: "var(--muted)", marginTop: 1 }}>No disp.</div>}
-                  </div>
+                  <div key={h} className={`hora ${form.hora === h ? "sel" : ""} ${ocp ? "ocp" : ""}`} onClick={() => {
+                         if (!ocp) {
+                         const [time, ampm] = h.split(' ');
+                         let [hh, mm] = time.split(':');
+                         hh = parseInt(hh);
+                          if (ampm === 'PM' && hh !== 12) hh += 12;
+                        if (ampm === 'AM' && hh === 12) hh = 0;
+                         const hora24 = `${String(hh).padStart(2,'0')}:${mm}`;
+                          setForm({ ...form, hora: h, hora24 });
+                           }
+                             }}>
+  {h}
+  {ocp && <div style={{ fontSize: 9, color: "var(--muted)", marginTop: 1 }}>No disp.</div>}
+</div>
                 );
               })}
             </div>
@@ -806,15 +819,15 @@ function Reservas({ initData = {}, barberos, servicios }) {
               <button className="btn-next" onClick={async () => {
              try {
              await api.crearReserva({
-             cliente_nombre: form.nombre,
-             cliente_telefono: form.telefono,
-             cliente_email: form.email,
-             barbero_id: form.barbero?.id,
-             servicio_id: form.servicio?.id,
-             fecha: form.fecha,
-             hora: form.hora,
-            metodo_pago: abonoMetodo,
-            });
+              cliente_nombre:   form.nombre,
+              cliente_telefono: form.telefono,
+              cliente_email:    form.email,
+              barbero_id:       form.barbero?.id,
+              servicio_id:      form.servicio?.id,
+              fecha_iso:        form.fechaISO,
+              hora_inicio:      form.hora24,
+                notas:            null,
+              });
     setStep(8);
   } catch {
     setStep(8); // igual avanza aunque falle
