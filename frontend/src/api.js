@@ -22,7 +22,7 @@ export const api = {
   crearReserva: (data) => post('/api/reservas', {
     cliente_nombre: data.cliente_nombre,
     cliente_tel:    data.cliente_telefono,
-    cliente_email:  data.cliente_email,
+    cliente_email:  data.cliente_email || null,
     barbero_id:     data.barbero_id,
     servicio_id:    data.servicio_id,
     fecha:          data.fecha_iso,
