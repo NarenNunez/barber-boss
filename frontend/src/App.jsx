@@ -621,6 +621,8 @@ function StepBar({ step, labels }) {
 // ─────────────────────────────────────────────
 function Reservas({ initData = {}, barberos, servicios }) {
   const [step, setStep] = useState(initData.barbero ? 2 : 1);
+  console.log('barberos:', barberos);
+  console.log('servicios:', servicios);
   const [form, setForm] = useState({ nombre: "", telefono: "", email: "", barbero: initData.barbero || null, servicio: null, fecha: "", hora: "" });
   const [abonoMetodo, setAbonoMetodo] = useState("nequi");
   const [comprobante, setComprobante] = useState(null);
