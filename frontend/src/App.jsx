@@ -905,7 +905,7 @@ function SuperAdmin({ barberos, servicios }) {
   );
 
   const totalHoy = barberos.reduce((a, b) => a + b.serviciosHoy, 0);
-  const pendAbono = reservas.filter(r => r.abonoEstado === "pendiente").length;
+  const pendAbono = reservas.filter(r => r.abono_estado === "pendiente").length;
 
   const SB = [
     { id: "dashboard", icon: "◈", label: "Dashboard" },
@@ -982,13 +982,12 @@ const aprobAbono = async id => {
             <div className="blk">
               <div className="blk-title">Citas de Hoy</div>
               {reservas.slice(0, 5).map(r => {
-                const b = barberos.find(x => x.id === r.barberoId);
                 return (
                   <div key={r.id} className="row">
-                    <div className="dot" style={{ background: b?.color }} />
+                    <div className="dot" style={{ background: r.barbero?.color }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: 13 }}>{r.cliente}</div>
-                      <div style={{ fontSize: 11, color: "var(--muted)" }}>{r.servicio} · {b?.nombre.split(" ")[0]}</div>
+                      <div style={{ fontSize: 11, color: "var(--muted)" }}>{r.servicio} · {r.barbero?.nombre.split(" ")[0]}</div>
                     </div>
                     <div style={{ fontSize: 12, color: "#9CA3AF", marginRight: 8 }}>{r.hora}</div>
                     <span className={`badge ${r.estado}`}>{r.estado.replace("_", " ")}</span>
@@ -1053,11 +1052,11 @@ const aprobAbono = async id => {
               </thead>
               <tbody>
                 {reservas.map(r => {
-                  const b = barberos.find(x => x.id === r.barberoId);
+                  
                   return (
                     <tr key={r.id}>
                       <td><div style={{ fontWeight: 600 }}>{r.cliente}</div><div style={{ fontSize: 11, color: "var(--muted)" }}>📱 {r.telefono}</div></td>
-                      <td><div style={{ display: "flex", alignItems: "center", gap: 7 }}><div className="av-sm" style={{ background: b?.color, width: 26, height: 26, fontSize: 10 }}>{b?.iniciales}</div>{b?.nombre.split(" ")[0]}</div></td>
+                      <td><div style={{ display: "flex", alignItems: "center", gap: 7 }}><div className="av-sm" style={{ background: r.barbero?.color, width: 26, height: 26, fontSize: 10 }}>{r.barbero?.nombre?.slice(0,2).toUpperCase()}</div>{r.barbero?.nombre.split(" ")[0]}</div></td>
                       <td style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", color: "var(--gold)" }}>{r.hora}</td>
                       <td style={{ fontSize: 12 }}>{r.servicio}</td>
                       <td>
@@ -1065,17 +1064,17 @@ const aprobAbono = async id => {
                           ? <button className="act-btn g" onClick={() => setAbonoModal(r)}>📎 Ver</button>
                           : <span style={{ fontSize: 11, color: "var(--muted)" }}>Sin comp.</span>}
                       </td>
-                      <td><span className={`badge ${r.abonoEstado}`}>{r.abonoEstado.replace("_", " ")}</span></td>
+                      <td><span className={`badge ${r.abono_estado}`}>{r.abono_estado.replace("_", " ")}</span></td>
                       <td>
-                        {r.abonoEstado === "pendiente" && (
+                        {r.abono_estado === "pendiente" && (
                           <div style={{ display: "flex", gap: 5 }}>
                             <button className="act-btn s" onClick={() => aprobAbono(r.id)}>✓ Aprobar</button>
                             <button className="act-btn d" onClick={() => rechAbono(r.id)}>✗ Rechazar</button>
                           </div>
                         )}
-                        {r.abonoEstado === "aprobado" && <span style={{ fontSize: 11, color: "var(--libre)" }}>✓ Aprobado</span>}
-                        {r.abonoEstado === "rechazado" && <span style={{ fontSize: 11, color: "var(--ocupado)" }}>✗ Rechazado</span>}
-                        {r.abonoEstado === "sin_abono" && <span style={{ fontSize: 11, color: "var(--muted)" }}>—</span>}
+                        {r.abono_estado === "aprobado" && <span style={{ fontSize: 11, color: "var(--libre)" }}>✓ Aprobado</span>}
+                        {r.abono_estado === "rechazado" && <span style={{ fontSize: 11, color: "var(--ocupado)" }}>✗ Rechazado</span>}
+                        {r.abono_estado === "sin_abono" && <span style={{ fontSize: 11, color: "var(--muted)" }}>—</span>}
                       </td>
                     </tr>
                   );
@@ -1092,18 +1091,18 @@ const aprobAbono = async id => {
               <thead><tr><th>Hora</th><th>Cliente</th><th>Barbero</th><th>Servicio</th><th>Abono</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody>
                 {reservas.map(r => {
-                  const b = barberos.find(x => x.id === r.barberoId);
+                  
                   return (
                     <tr key={r.id}>
                       <td style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", color: "var(--gold)" }}>{r.hora}</td>
                       <td><div style={{ fontWeight: 600 }}>{r.cliente}</div><div style={{ fontSize: 11, color: "var(--muted)" }}>📱 {r.telefono}</div></td>
-                      <td><div style={{ display: "flex", alignItems: "center", gap: 7 }}><div className="av-sm" style={{ background: b?.color, width: 26, height: 26, fontSize: 10 }}>{b?.iniciales}</div>{b?.nombre.split(" ")[0]}</div></td>
+                      <td><div style={{ display: "flex", alignItems: "center", gap: 7 }}><div className="av-sm" style={{ background: r.barbero?.color, width: 26, height: 26, fontSize: 10 }}>{r.barbero?.nombre?.slice(0,2).toUpperCase()}</div>{r.barbero?.nombre.split(" ")[0]}</div></td>
                       <td style={{ fontSize: 12 }}>{r.servicio}</td>
-                      <td><span className={`badge ${r.abonoEstado}`}>{r.abonoEstado.replace("_", " ")}</span></td>
+                      <td><span className={`badge ${r.abono_estado}`}>{r.abono_estado.replace("_", " ")}</span></td>
                       <td><span className={`badge ${r.estado}`}>{r.estado.replace("_", " ")}</span></td>
                       <td>
                         <div style={{ display: "flex", gap: 5 }}>
-                          {r.estado === "pendiente" && r.abonoEstado === "aprobado" && <button className="act-btn s" onClick={() => iniciar(r.id)}>Iniciar</button>}
+                          {r.estado === "pendiente" && r.abono_estado === "aprobado" && <button className="act-btn s" onClick={() => iniciar(r.id)}>Iniciar</button>}
                           {r.estado === "en_curso" && <button className="act-btn p" onClick={() => completar(r.id)}>Completar</button>}
                           {(r.estado === "pendiente" || r.estado === "en_curso") && <button className="act-btn d" onClick={() => cancelar(r.id)}>Cancelar</button>}
                         </div>
@@ -1363,11 +1362,11 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
               <div style={{ flex: 1 }}>
                 <div className="cita-nombre">{r.cliente}</div>
                 <div className="cita-svc">{r.servicio}</div>
-                <span className={`badge ${r.abonoEstado}`} style={{ marginTop: 4, display: "inline-block" }}>Abono: {r.abonoEstado.replace("_", " ")}</span>
+                <span className={`badge ${r.abono_estado}`} style={{ marginTop: 4, display: "inline-block" }}>Abono: {r.abono_estado.replace("_", " ")}</span>
               </div>
               <span className={`badge ${r.estado}`}>{r.estado.replace("_", " ")}</span>
               <div className="cita-btns">
-                {r.estado === "pendiente" && r.abonoEstado === "aprobado" && (
+                {r.estado === "pendiente" && r.abono_estado === "aprobado" && (
                   <button className="act-btn s" onClick={() => setReservas(p => p.map(x => x.id === r.id ? { ...x, estado: "en_curso" } : x))}>Iniciar</button>
                 )}
                 {r.estado === "en_curso" && (
@@ -1493,10 +1492,10 @@ function Monitor({ barberos }) {
         </div>
         <div className="mon-prox-list">
           {RESERVAS_INIT.filter(r => r.estado === "pendiente").slice(0, 3).map(r => {
-            const b = barberos.find(x => x.id === r.barberoId);
+            
             return (
               <div key={r.id} className="mon-prox-item">
-                <strong>{r.hora}</strong> · {r.cliente.split(" ")[0]} → <span style={{ color: b?.color }}>{b?.nombre.split(" ")[0]}</span>
+                <strong>{r.hora}</strong> · {r.cliente.split(" ")[0]} → <span style={{ color: r.barbero?.color }}>{r.barbero?.nombre.split(" ")[0]}</span>
               </div>
             );
           })}
