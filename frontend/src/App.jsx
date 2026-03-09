@@ -1556,8 +1556,17 @@ export default function App() {
   const navigate = useNavigate();
   const [initData, setInitData] = useState({});
   const [barberoLogueado, setBarberoLogueado] = useState(null);
-  const barberos = BARBEROS;
-  const servicios = SERVICIOS;
+  const [barberos, setBarberos] = useState(BARBEROS);
+  const [servicios, setServicios] = useState(SERVICIOS);
+
+  useEffect(() => {
+    api.getBarberos()
+      .then(data => setBarberos(data))
+      .catch(err => console.error('ERROR barberos:', err));
+    api.getServicios()
+      .then(data => setServicios(data))
+      .catch(err => console.error('ERROR servicios:', err));
+  }, []);
 
   const routeMap = {
     "/":         "home",
