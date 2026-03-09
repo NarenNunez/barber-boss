@@ -524,7 +524,7 @@ function Home({ onNav }) {
             <span className="outline">BARBER</span><br />
             <span className="gold">BOSS</span>
           </div>
-          <div className="hero-tagline">Where every cut tells a story</div>
+          <div className="hero-tagline">Reserva tu cita y déjanos cuidar tu estilo.</div>
           <div className="hero-btns">
             <button className="btn-gold" onClick={() => onNav("reservas")}>Reservar Cita</button>
             <button className="btn-ghost" onClick={() => document.getElementById("equipo")?.scrollIntoView({ behavior: "smooth" })}>Nuestro Equipo</button>
