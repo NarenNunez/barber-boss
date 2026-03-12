@@ -978,7 +978,7 @@ const aprobAbono = async id => {
           </div>
           <div className="kpi-grid">
             {[
-              { l: "Servicios Hoy", v: totalHoy, sub: "↑ +3 vs ayer", gold: false },
+              { l: "Servicios Hoy", v: reservas.length, sub: `${reservas.filter(r => r.estado === 'completado').length} completados`, gold: false },
               { l: "Citas Pendientes", v: reservas.filter(r => r.estado === "pendiente").length, sub: "Para hoy", gold: false },
               { l: "Abonos en Revisión", v: pendAbono, sub: pendAbono > 0 ? "⚠ Requieren acción" : "Todo al día", gold: true },
               { l: "En Curso Ahora", v: reservas.filter(r => r.estado === "en_curso").length, sub: "Barberos activos", gold: false },
