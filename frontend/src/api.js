@@ -75,3 +75,29 @@ export const api = {
     return post('/api/reservas', body);
   },
 };
+suscribirReservas: (callback) => {
+    const channel = supabase
+      .channel('reservas-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reservas' }, callback)
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  },
+
+  suscribirBarberos: (callback) => {
+    const channel = supabase
+      .channel('barberos-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'barberos' }, callback)
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  },
+
+  getHorasOcupadas: async (barberoId, fecha) => {
+    const { data, error } = await supabase
+      .from('reservas')
+      .select('hora_inicio, hora_fin')
+      .eq('barbero_id', barberoId)
+      .eq('fecha', fecha)
+      .neq('estado', 'cancelado');
+    if (error) throw error;
+    return data;
+  },

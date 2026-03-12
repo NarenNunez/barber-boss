@@ -37,7 +37,15 @@ let RESERVAS_INIT = [
 const DIAS  = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 const HORAS_DISP = ["9:00 AM","9:30 AM","10:00 AM","10:30 AM","11:00 AM","11:30 AM","12:00 PM","12:30 PM","1:00 PM","1:30 PM","2:00 PM","2:30 PM","3:00 PM","3:30 PM","4:00 PM","4:30 PM","5:00 PM","5:30 PM"];
-const HORAS_OCUP = ["10:00 AM","11:30 AM","2:30 PM","4:00 PM"];
+const [horasOcupadas, setHorasOcupadas] = useState([]);
+
+  useEffect(() => {
+    if (form.barbero?.id && form.fechaISO) {
+      api.getHorasOcupadas(form.barbero.id, form.fechaISO)
+        .then(data => setHorasOcupadas(data.map(r => r.hora_inicio)))
+        .catch(() => {});
+    }
+  }, [form.barbero?.id, form.fechaISO]);
 const fmtCOP = n => `$${Number(n).toLocaleString("es-CO")}`;
 
 // ─────────────────────────────────────────────
@@ -741,7 +749,7 @@ function Reservas({ initData = {}, barberos, servicios }) {
             <div className="fsub">Disponibilidad de {form.barbero?.nombre.split(" ")[0]} · {form.fecha}</div>
             <div className="hora-grid">
               {HORAS_DISP.map(h => {
-                const ocp = HORAS_OCUP.includes(h);
+                const ocp = horasOcupadas.some(ho => ho.startsWith(h.split(':')[0].padStart(2,'0')));
                 return (
                   <div key={h} className={`hora ${form.hora === h ? "sel" : ""} ${ocp ? "ocp" : ""}`} onClick={() => {
                          if (!ocp) {
@@ -857,6 +865,10 @@ function SuperAdmin({ barberos, servicios }) {
 
   useEffect(() => {
     api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
+    const unsub = api.suscribirReservas(() => {
+      api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
+    });
+    return unsub;
   }, []);
   const [abonoModal, setAbonoModal] = useState(null);
   const PIN_ADMIN = "0000"; // ← Cambia este PIN por el que quieras
@@ -1328,8 +1340,17 @@ function PinLogin({ onSuccess, barberos }) {
 // ─────────────────────────────────────────────
 function BarberoPanel({ barbero, onLogout, barberos }) {
   const [tab, setTab] = useState("citas");
-  const [reservas, setReservas] = useState(RESERVAS_INIT);
-  const misCitas = reservas.filter(r => r.barberoId === barbero.id);
+  const hoy = new Date().toISOString().split('T')[0];
+  const [reservas, setReservas] = useState([]);
+
+  useEffect(() => {
+    api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
+    const unsub = api.suscribirReservas(() => {
+      api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
+    });
+    return unsub;
+  }, []);
+  const misCitas = reservas.filter(r => r.barbero?.id === barbero.id);
 
   return (
     <div className="bp">
@@ -1431,11 +1452,44 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
 // MONITOR
 // ─────────────────────────────────────────────
 function Monitor({ barberos }) {
+  const [reservas, setReservas] = useState([]);
+  const hoy = new Date().toISOString().split('T')[0];
   const [showWalk, setShowWalk] = useState(false);
   const [walkNombre, setWalkNombre] = useState("");
   const [walkBarbId, setWalkBarbId] = useState(null);
   const now = new Date();
-  const totalHoy = barberos.reduce((a, b) => a + b.serviciosHoy, 0);
+
+  useEffect(() => {
+    api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
+    const unsub = api.suscribirReservas(() => {
+      api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
+    });
+    return unsub;
+  }, []);
+
+  const totalHoy = reservas.filter(r => r.estado === 'completado').length;
+
+  const getBarberoEstado = (barberoId) => {
+    const enCurso = reservas.find(r => r.barbero?.id === barberoId && r.estado === 'en_curso');
+    if (enCurso) return 'ocupado';
+    const proximo = reservas.find(r => r.barbero?.id === barberoId && r.estado === 'pendiente');
+    if (proximo) return 'proximo';
+    return 'libre';
+  };
+
+  const getProximaCita = (barberoId) => {
+    return reservas
+      .filter(r => r.barbero?.id === barberoId && r.estado === 'pendiente')
+      .sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio))[0];
+  };
+
+  const getCitaEnCurso = (barberoId) => {
+    return reservas.find(r => r.barbero?.id === barberoId && r.estado === 'en_curso');
+  };
+
+  const getCola = (barberoId) => {
+    return reservas.filter(r => r.barbero?.id === barberoId && r.estado === 'pendiente').length;
+  };
 
   return (
     <div className="monitor">
@@ -1454,51 +1508,57 @@ function Monitor({ barberos }) {
       </div>
 
       <div className="mon-grid">
-        {barberos.map(b => (
-          <div key={b.id} className={`mon-card ${b.estado}`}>
-            <div>
-              <div className="mon-barb-name" style={{ color: b.color }}>{b.nombre.split(" ")[0]}</div>
-              <div className="mon-barb-esp">{b.especialidad}</div>
-            </div>
-            <div className={`mon-estado ${b.estado}`}>
-              <div className={`mon-blink ${b.estado}`} />
-              {b.estado === "libre" ? "Disponible" : b.estado === "ocupado" ? "Atendiendo" : "Próximo Cliente"}
-            </div>
-            <div>
-              <div className="mon-label">{b.estado === "ocupado" ? "En Silla" : "Próxima Cita"}</div>
-              {b.proximoCliente
-                ? <><div className="mon-cliente">{b.proximoCliente}</div><div className="mon-hora">{b.proximaCita}</div></>
-                : <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, fontStyle: "italic", color: "var(--muted)" }}>Sin reservas</div>
-              }
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "auto" }}>
+        {barberos.map(b => {
+          const estado = getBarberoEstado(b.id);
+          const citaEnCurso = getCitaEnCurso(b.id);
+          const proximaCita = getProximaCita(b.id);
+          const cola = getCola(b.id);
+          const citaActiva = citaEnCurso || proximaCita;
+          return (
+            <div key={b.id} className={`mon-card ${estado}`}>
               <div>
-                <div className="mon-label">Cola</div>
-                <div className="mon-cola" style={{ color: b.cola > 0 ? "var(--gold)" : "var(--muted)" }}>{b.cola}</div>
+                <div className="mon-barb-name" style={{ color: b.color }}>{b.nombre.split(" ")[0]}</div>
+                <div className="mon-barb-esp">{b.especialidad}</div>
               </div>
-              <div style={{ textAlign: "right" }}>
-                <div className="mon-label">Servicios hoy</div>
-                <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: "var(--muted)" }}>{b.serviciosHoy}</div>
+              <div className={`mon-estado ${estado}`}>
+                <div className={`mon-blink ${estado}`} />
+                {estado === "libre" ? "Disponible" : estado === "ocupado" ? "Atendiendo" : "Próximo Cliente"}
+              </div>
+              <div>
+                <div className="mon-label">{estado === "ocupado" ? "En Silla" : "Próxima Cita"}</div>
+                {citaActiva
+                  ? <><div className="mon-cliente">{citaActiva.cliente_nombre}</div><div className="mon-hora">{citaActiva.hora_inicio}</div></>
+                  : <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, fontStyle: "italic", color: "var(--muted)" }}>Sin reservas</div>
+                }
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "auto" }}>
+                <div>
+                  <div className="mon-label">Cola</div>
+                  <div className="mon-cola" style={{ color: cola > 0 ? "var(--gold)" : "var(--muted)" }}>{cola}</div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div className="mon-label">Completados hoy</div>
+                  <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: "var(--muted)" }}>
+                    {reservas.filter(r => r.barbero?.id === b.id && r.estado === 'completado').length}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="mon-footer">
         <div style={{ display: "flex", gap: 28 }}>
-          <div className="mon-stat"><strong>Hoy:</strong> {totalHoy} clientes</div>
-          <div className="mon-stat"><strong>Cola total:</strong> {barberos.reduce((a, b) => a + b.cola, 0)} personas</div>
+          <div className="mon-stat"><strong>Completados hoy:</strong> {totalHoy}</div>
+          <div className="mon-stat"><strong>Cola total:</strong> {barberos.reduce((a, b) => a + getCola(b.id), 0)} personas</div>
         </div>
         <div className="mon-prox-list">
-          {RESERVAS_INIT.filter(r => r.estado === "pendiente").slice(0, 3).map(r => {
-            
-            return (
-              <div key={r.id} className="mon-prox-item">
-                <strong>{r.hora}</strong> · {r.cliente.split(" ")[0]} → <span style={{ color: r.barbero?.color }}>{r.barbero?.nombre.split(" ")[0]}</span>
-              </div>
-            );
-          })}
+          {reservas.filter(r => r.estado === "pendiente").slice(0, 3).map(r => (
+            <div key={r.id} className="mon-prox-item">
+              <strong>{r.hora_inicio}</strong> · {r.cliente_nombre?.split(" ")[0]} → <span style={{ color: r.barbero?.color }}>{r.barbero?.nombre?.split(" ")[0]}</span>
+            </div>
+          ))}
         </div>
         <button className="mon-walk-btn" onClick={() => setShowWalk(true)}>+ Walk-In</button>
       </div>
@@ -1515,17 +1575,21 @@ function Monitor({ barberos }) {
             <div className="field">
               <label className="flabel">Asignar a Barbero</label>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {barberos.map(b => (
-                  <div key={b.id} className={`opt ${walkBarbId === b.id ? "sel" : ""}`} style={{ padding: 12 }} onClick={() => setWalkBarbId(b.id)}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ width: 28, height: 28, borderRadius: "50%", background: b.color, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 700, color: "#000" }}>{b.iniciales}</div>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 600 }}>{b.nombre.split(" ")[0]}</div>
-                        <div style={{ fontSize: 10, color: b.estado === "libre" ? "var(--libre)" : b.estado === "ocupado" ? "var(--ocupado)" : "var(--proximo)" }}>{b.estado} · Cola {b.cola}</div>
+                {barberos.map(b => {
+                  const estado = getBarberoEstado(b.id);
+                  const cola = getCola(b.id);
+                  return (
+                    <div key={b.id} className={`opt ${walkBarbId === b.id ? "sel" : ""}`} style={{ padding: 12 }} onClick={() => setWalkBarbId(b.id)}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: "50%", background: b.color, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 700, color: "#000" }}>{b.nombre.slice(0,2).toUpperCase()}</div>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 600 }}>{b.nombre.split(" ")[0]}</div>
+                          <div style={{ fontSize: 10, color: estado === "libre" ? "var(--libre)" : estado === "ocupado" ? "var(--ocupado)" : "var(--proximo)" }}>{estado} · Cola {cola}</div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
             <button className="btn-gold" style={{ width: "100%", marginTop: 4 }} onClick={() => { setShowWalk(false); setWalkNombre(""); setWalkBarbId(null); }}>
