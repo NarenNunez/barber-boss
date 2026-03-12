@@ -904,7 +904,7 @@ function SuperAdmin({ barberos, servicios }) {
     </div>
   );
 
-  const totalHoy = barberos.reduce((a, b) => a + b.serviciosHoy, 0);
+  const totalHoy = reservas.filter(r => r.estado === 'completado').length;
   const pendAbono = reservas.filter(r => r.abono_estado === "pendiente").length;
 
   const SB = [
@@ -1201,7 +1201,7 @@ const aprobAbono = async id => {
         {tab === "reportes" && <div className="fade">
           <div className="pg-head"><div className="pg-title">Reportes</div><div className="pg-sub">Estadísticas del negocio</div></div>
           <div className="kpi-grid">
-            {[["Servicios Semana", "98", "↑ +8% vs semana pasada"], ["Servicios Mes", "380", "↑ +15% vs mes pasado"], ["Servicio Top", "Corte + Barba", "38% del total"], ["Barbero #1", "Keiner", "7 servicios hoy"]].map(([l, v, s]) => (
+            {[["Servicios Hoy", reservas.filter(r => r.estado === 'completado').length, "Completados hoy"], ["Citas Totales", reservas.length, "Registradas hoy"], ["Abonos Pendientes", reservas.filter(r => r.abono_estado === 'pendiente').length, "Por revisar"], ["En Curso", reservas.filter(r => r.estado === 'en_curso').length, "Ahora mismo"]].map(([l, v, s]) => (
               <div key={l} className="kpi"><div className="kpi-lbl">{l}</div><div className="kpi-val gold" style={{ fontSize: 28 }}>{v}</div><div className="kpi-sub">{s}</div></div>
             ))}
           </div>
