@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { api } from './api.js';
+import { supabase } from './supabase.js';
 // ─────────────────────────────────────────────
 // DATOS
 // ─────────────────────────────────────────────
@@ -1289,12 +1290,20 @@ function PinLogin({ onSuccess, barberos }) {
   const [barbSelId, setBarbSelId] = useState(null);
   const [pin, setPin] = useState("");
   const [err, setErr] = useState("");
+  const [barberosPins, setBarberosPins] = useState([]);
+
+  useEffect(() => {
+    supabase.from('barberos').select('id, pin').then(({ data }) => {
+      if (data) setBarberosPins(data);
+    });
+  }, []);
 
   const pressKey = k => { if (pin.length < 4) setPin(p => p + k); setErr(""); };
   const del = () => setPin(p => p.slice(0, -1));
   const verificar = () => {
-    const b = barberos.find(x => x.id === barbSelId); // ← FIXED: era BARBEROS.find
-    if (b && pin === b.pin) { onSuccess(b); }
+    const bp = barberosPins.find(x => x.id === barbSelId);
+    const b = barberos.find(x => x.id === barbSelId);
+    if (bp && pin === bp.pin) { onSuccess(b); }
     else { setErr("PIN incorrecto. Intenta de nuevo."); setPin(""); }
   };
 
