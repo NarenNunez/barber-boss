@@ -74,8 +74,8 @@ export const api = {
     if (data.cliente_email) body.cliente_email = data.cliente_email;
     return post('/api/reservas', body);
   },
-};
-suscribirReservas: (callback) => {
+
+  suscribirReservas: (callback) => {
     const channel = supabase
       .channel('reservas-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'reservas' }, callback)
@@ -101,3 +101,4 @@ suscribirReservas: (callback) => {
     if (error) throw error;
     return data;
   },
+};
