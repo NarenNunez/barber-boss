@@ -38,15 +38,6 @@ let RESERVAS_INIT = [
 const DIAS  = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 const HORAS_DISP = ["9:00 AM","9:30 AM","10:00 AM","10:30 AM","11:00 AM","11:30 AM","12:00 PM","12:30 PM","1:00 PM","1:30 PM","2:00 PM","2:30 PM","3:00 PM","3:30 PM","4:00 PM","4:30 PM","5:00 PM","5:30 PM"];
-const [horasOcupadas, setHorasOcupadas] = useState([]);
-
-  useEffect(() => {
-    if (form.barbero?.id && form.fechaISO) {
-      api.getHorasOcupadas(form.barbero.id, form.fechaISO)
-        .then(data => setHorasOcupadas(data.map(r => r.hora_inicio)))
-        .catch(() => {});
-    }
-  }, [form.barbero?.id, form.fechaISO]);
 const fmtCOP = n => `$${Number(n).toLocaleString("es-CO")}`;
 
 // ─────────────────────────────────────────────
@@ -630,12 +621,19 @@ function StepBar({ step, labels }) {
 // ─────────────────────────────────────────────
 function Reservas({ initData = {}, barberos, servicios }) {
   const [step, setStep] = useState(initData.barbero ? 2 : 1);
-  console.log('barberos:', barberos);
-  console.log('servicios:', servicios);
   const [form, setForm] = useState({ nombre: "", telefono: "", email: "", barbero: initData.barbero || null, servicio: null, fecha: "", hora: "" });
   const [abonoMetodo, setAbonoMetodo] = useState("nequi");
   const [comprobante, setComprobante] = useState(null);
   const fileRef = useRef();
+  const [horasOcupadas, setHorasOcupadas] = useState([]);
+
+  useEffect(() => {
+    if (form.barbero?.id && form.fechaISO) {
+      api.getHorasOcupadas(form.barbero.id, form.fechaISO)
+        .then(data => setHorasOcupadas(data.map(r => r.hora_inicio)))
+        .catch(() => {});
+    }
+  }, [form.barbero?.id, form.fechaISO]);
 
   const STEP_LABELS = ["Datos", "Barbero", "Servicio", "Fecha", "Hora", "Abono", "Confirmar"];
 
@@ -729,13 +727,13 @@ function Reservas({ initData = {}, barberos, servicios }) {
                 const lbl = `${DIAS[d.getDay()].slice(0, 3)} ${d.getDate()} ${MESES[d.getMonth()]}`;
                 return (
                   <div key={i} className={`day ${form.fecha === lbl ? "sel" : ""}`} onClick={() => {
-                          const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                             setForm({ ...form, fecha: lbl, fechaISO: iso });
-                                  }}>
-                            <div style={{ fontSize: 9, color: "inherit", letterSpacing: 1, opacity: .6, marginBottom: 2 }}>{DIAS[d.getDay()].slice(0, 3).toUpperCase()}</div>
-                            <div className="day-d">{d.getDate()}</div>
-                            <div className="day-m">{MESES[d.getMonth()]}</div>
-                            </div>
+                    const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                    setForm({ ...form, fecha: lbl, fechaISO: iso });
+                  }}>
+                    <div style={{ fontSize: 9, color: "inherit", letterSpacing: 1, opacity: .6, marginBottom: 2 }}>{DIAS[d.getDay()].slice(0, 3).toUpperCase()}</div>
+                    <div className="day-d">{d.getDate()}</div>
+                    <div className="day-m">{MESES[d.getMonth()]}</div>
+                  </div>
                 );
               })}
             </div>
@@ -753,19 +751,19 @@ function Reservas({ initData = {}, barberos, servicios }) {
                 const ocp = horasOcupadas.some(ho => ho.startsWith(h.split(':')[0].padStart(2,'0')));
                 return (
                   <div key={h} className={`hora ${form.hora === h ? "sel" : ""} ${ocp ? "ocp" : ""}`} onClick={() => {
-                         if (!ocp) {
-                         const [time, ampm] = h.split(' ');
-                         let [hh, mm] = time.split(':');
-                         hh = parseInt(hh);
-                          if (ampm === 'PM' && hh !== 12) hh += 12;
-                        if (ampm === 'AM' && hh === 12) hh = 0;
-                         const hora24 = `${String(hh).padStart(2,'0')}:${mm}`;
-                          setForm({ ...form, hora: h, hora24 });
-                           }
-                             }}>
-  {h}
-  {ocp && <div style={{ fontSize: 9, color: "var(--muted)", marginTop: 1 }}>No disp.</div>}
-</div>
+                    if (!ocp) {
+                      const [time, ampm] = h.split(' ');
+                      let [hh, mm] = time.split(':');
+                      hh = parseInt(hh);
+                      if (ampm === 'PM' && hh !== 12) hh += 12;
+                      if (ampm === 'AM' && hh === 12) hh = 0;
+                      const hora24 = `${String(hh).padStart(2,'0')}:${mm}`;
+                      setForm({ ...form, hora: h, hora24 });
+                    }
+                  }}>
+                    {h}
+                    {ocp && <div style={{ fontSize: 9, color: "var(--muted)", marginTop: 1 }}>No disp.</div>}
+                  </div>
                 );
               })}
             </div>
@@ -852,7 +850,6 @@ function Reservas({ initData = {}, barberos, servicios }) {
     </div>
   );
 }
-
 // ─────────────────────────────────────────────
 // SUPER ADMIN
 // ─────────────────────────────────────────────
