@@ -467,28 +467,27 @@ function BarberoModal({ b, onClose, onReservar }) {
         <button className="modal-close" onClick={onClose}>✕</button>
         <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 22 }}>
           <div style={{ width: 80, height: 80, borderRadius: "50%", background: b.color, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Playfair Display',serif", fontSize: 28, fontStyle: "italic", fontWeight: 700, color: "#000", flexShrink: 0 }}>
-            {b.iniciales}
+            {b.nombre?.slice(0,2).toUpperCase()}
           </div>
           <div>
             <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 24, fontWeight: 700, fontStyle: "italic" }}>{b.nombre}</div>
             <div style={{ fontSize: 11, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", marginTop: 2 }}>{b.especialidad}</div>
-            <div style={{ color: "var(--gold)", fontSize: 13, marginTop: 4 }}>{"★".repeat(5)} <span style={{ color: "var(--muted)", fontSize: 11 }}>{b.rating}</span></div>
+            <div style={{ color: "var(--gold)", fontSize: 13, marginTop: 4 }}>{"★".repeat(5)}</div>
           </div>
         </div>
         <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(212,175,55,.3),transparent)", marginBottom: 18 }} />
-        <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 16, fontStyle: "italic", color: "var(--muted)", lineHeight: 1.8, marginBottom: 20 }}>{b.bio}</p>
+        <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 16, fontStyle: "italic", color: "var(--muted)", lineHeight: 1.8, marginBottom: 20 }}>{b.bio || "Especialista con años de experiencia en el arte de la barbería."}</p>
         <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: "var(--muted)", marginBottom: 10 }}>Galería de trabajos</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 20 }}>
-          {b.galeria.map(g => (
+          {(b.galeria || ["Fade Clásico","Pompadour","Undercut","Crew Cut","Buzz Cut","Quiff"]).map(g => (
             <div key={g} style={{ aspectRatio: "1", background: `${b.color}10`, border: `1px solid ${b.color}25`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: 14, color: "var(--muted)", textAlign: "center", padding: 8 }}>{g}</div>
           ))}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--muted)", marginBottom: 20 }}>
-          <span>Horario: <strong style={{ color: "#fff" }}>{b.horario}</strong></span>
-          <span>Hoy: <strong style={{ color: "var(--gold)" }}>{b.serviciosHoy} servicios</strong></span>
+          <span>Especialidad: <strong style={{ color: "#fff" }}>{b.especialidad}</strong></span>
         </div>
         <button className="btn-gold" style={{ width: "100%" }} onClick={() => { onClose(); onReservar(b); }}>
-          Reservar con {b.nombre.split(" ")[0]}
+          Reservar con {b.nombre?.split(" ")[0]}
         </button>
       </div>
     </div>
@@ -553,7 +552,7 @@ function Home({ onNav }) {
                 <div className="barb-photo" style={{ background: `${b.color}0D` }}>
                   {b.foto_url
                     ? <img src={b.foto_url} alt={b.nombre} style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0 }} />
-                    : <div className="barb-initials-ph" style={{ color: b.color }}>{b.iniciales}</div>
+                    : <div className="barb-initials-ph" style={{ color: b.color }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
                   }
                   <div className="barb-hover">
                     <div className="barb-hover-cta">Ver perfil completo →</div>
@@ -563,7 +562,7 @@ function Home({ onNav }) {
                 <div className="barb-body">
                   <div className="barb-name">{b.nombre}</div>
                   <div className="barb-esp">{b.especialidad}</div>
-                  <div className="barb-rating">{"★".repeat(Math.round(b.rating))} <span style={{ color: "var(--muted)", fontSize: 12 }}>{b.rating}</span></div>
+                  <div className="barb-rating">{"★".repeat(5)}</div>
                 </div>
               </div>
             ))}
