@@ -165,4 +165,26 @@ export const api = {
       mes:    calcular(data),
     };
   },
+  getGananciasAdmin: async () => {
+    const ahora = new Date();
+    const hoy = ahora.toISOString().split('T')[0];
+
+    const lunesActual = new Date(ahora);
+    lunesActual.setDate(ahora.getDate() - ahora.getDay() + 1);
+    const semanaInicio = lunesActual.toISOString().split('T')[0];
+
+    const mesInicio = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}-01`;
+
+    const { data, error } = await supabase
+      .from('reservas')
+      .select(`
+        fecha,
+        barbero:barbero_id ( id, nombre, color, porcentaje ),
+        servicio:servicio_id ( precio )
+      `)
+      .eq('estado', 'completado')
+      .gte('fecha', mesInicio);
+    if (error) throw error;
+    return { data, hoy, semanaInicio, mesInicio };
+  },
 };

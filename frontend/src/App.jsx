@@ -970,6 +970,69 @@ function EditBarberoForm({ barbero, onClose, onSaved }) {
     </div>
   );
 }
+function GananciasAdmin({ barberos }) {
+  const [datos, setDatos] = useState(null);
+
+  useEffect(() => {
+    api.getGananciasAdmin().then(setDatos).catch(() => {});
+  }, []);
+
+  if (!datos) return null;
+
+  const { data, hoy, semanaInicio } = datos;
+
+  const calcBarbero = (barberoId, desde) => {
+    const reservas = data.filter(r => r.barbero?.id === barberoId && r.fecha >= desde);
+    const total = reservas.reduce((a, r) => a + (r.servicio?.precio || 0), 0);
+    const b = barberos.find(x => x.id === barberoId);
+    const pct = b?.porcentaje || 60;
+    return { total, ganancia: Math.round(total * pct / 100), negocio: Math.round(total * (100 - pct) / 100) };
+  };
+
+  const totalHoy    = data.filter(r => r.fecha === hoy).reduce((a, r) => a + (r.servicio?.precio || 0), 0);
+  const totalSemana = data.filter(r => r.fecha >= semanaInicio).reduce((a, r) => a + (r.servicio?.precio || 0), 0);
+  const totalMes    = data.reduce((a, r) => a + (r.servicio?.precio || 0), 0);
+
+  return (
+    <div>
+      <div className="kpi-grid" style={{ marginBottom: 20 }}>
+        {[["Ingresos Hoy", totalHoy], ["Ingresos Semana", totalSemana], ["Ingresos Mes", totalMes]].map(([l, v]) => (
+          <div key={l} className="kpi">
+            <div className="kpi-lbl">{l}</div>
+            <div className="kpi-val gold" style={{ fontSize: 26 }}>{fmtCOP(v)}</div>
+          </div>
+        ))}
+      </div>
+      <div className="blk">
+        <div className="blk-title">Ganancias por Barbero — Esta Semana</div>
+        {barberos.map(b => {
+          const { total, ganancia, negocio } = calcBarbero(b.id, semanaInicio);
+          return (
+            <div key={b.id} className="row" style={{ flexWrap: "wrap", gap: 8 }}>
+              <div className="av-sm" style={{ background: b.color }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
+              <div style={{ flex: 1, minWidth: 120 }}>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>{b.nombre}</div>
+                <div style={{ fontSize: 10, color: "var(--muted)" }}>{b.porcentaje || 60}% barbero / {100 - (b.porcentaje || 60)}% negocio</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 2 }}>Total generado</div>
+                <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, fontStyle: "italic", color: "#fff" }}>{fmtCOP(total)}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 2 }}>Barbero</div>
+                <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, fontStyle: "italic", color: "var(--gold)" }}>{fmtCOP(ganancia)}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 2 }}>Negocio</div>
+                <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, fontStyle: "italic", color: "var(--libre)" }}>{fmtCOP(negocio)}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 // ─────────────────────────────────────────────
 // SUPER ADMIN
 // ─────────────────────────────────────────────
@@ -1345,6 +1408,7 @@ const aprobAbono = async id => {
               <div key={l} className="kpi"><div className="kpi-lbl">{l}</div><div className="kpi-val gold" style={{ fontSize: 28 }}>{v}</div><div className="kpi-sub">{s}</div></div>
             ))}
           </div>
+          <GananciasAdmin barberos={barberos} />
           <div className="g2">
             <div className="blk">
               <div className="blk-title">Ranking Barberos (Hoy)</div>
