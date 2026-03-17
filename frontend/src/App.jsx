@@ -851,24 +851,65 @@ function Reservas({ initData = {}, barberos, servicios }) {
 }
 function EditBarberoForm({ barbero, onClose, onSaved }) {
   const [form, setForm] = useState({
-    nombre:        barbero.nombre || "",
-    especialidad:  barbero.especialidad || "",
-    bio:           barbero.bio || "",
+    nombre:         barbero.nombre || "",
+    especialidad:   barbero.especialidad || "",
+    bio:            barbero.bio || "",
     horario_inicio: barbero.horario_inicio || "",
     horario_fin:    barbero.horario_fin || "",
-    color:         barbero.color || "#D4AF37",
+    color:          barbero.color || "#D4AF37",
   });
   const [saving, setSaving] = useState(false);
+  const [fotoPreview, setFotoPreview] = useState(barbero.foto_url || null);
+  const [fotoFile, setFotoFile] = useState(null);
+  const fileRef = useRef();
+
+  const handleFoto = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setFotoFile(file);
+    setFotoPreview(URL.createObjectURL(file));
+  };
 
   const guardar = async () => {
     setSaving(true);
-    await supabase.from('barberos').update(form).eq('id', barbero.id);
+    let foto_url = barbero.foto_url;
+
+    if (fotoFile) {
+      const ext = fotoFile.name.split('.').pop();
+      const path = `barbero-${barbero.id}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('fotos-barberos')
+        .upload(path, fotoFile, { upsert: true });
+      if (!uploadError) {
+        const { data } = supabase.storage.from('fotos-barberos').getPublicUrl(path);
+        foto_url = data.publicUrl;
+      }
+    }
+
+    await supabase.from('barberos').update({ ...form, foto_url }).eq('id', barbero.id);
     setSaving(false);
     onSaved();
   };
 
   return (
     <div>
+      <div className="field">
+        <label className="flabel">Foto del Barbero</label>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
+          <div style={{ width: 72, height: 72, borderRadius: "50%", background: form.color, overflow: "hidden", flexShrink: 0 }}>
+            {fotoPreview
+              ? <img src={fotoPreview} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Playfair Display',serif", fontSize: 22, fontWeight: 700, color: "#000" }}>{form.nombre?.slice(0,2).toUpperCase()}</div>
+            }
+          </div>
+          <div>
+            <input type="file" accept="image/*" ref={fileRef} style={{ display: "none" }} onChange={handleFoto} />
+            <button className="act-btn g" onClick={() => fileRef.current?.click()}>📷 Cambiar foto</button>
+            {fotoFile && <div style={{ fontSize: 11, color: "var(--libre)", marginTop: 6 }}>✓ {fotoFile.name}</div>}
+          </div>
+        </div>
+      </div>
+
       {[
         ["Nombre", "nombre"],
         ["Especialidad", "especialidad"],
@@ -881,6 +922,7 @@ function EditBarberoForm({ barbero, onClose, onSaved }) {
           <input className="finput" value={form[k]} onChange={e => setForm({ ...form, [k]: e.target.value })} />
         </div>
       ))}
+
       <div className="field">
         <label className="flabel">Color</label>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -889,6 +931,7 @@ function EditBarberoForm({ barbero, onClose, onSaved }) {
           <span style={{ fontSize: 13, color: "var(--muted)" }}>{form.color}</span>
         </div>
       </div>
+
       <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
         <button className="btn-back" style={{ flex: 1 }} onClick={onClose}>Cancelar</button>
         <button className="btn-next" style={{ flex: 2 }} onClick={guardar} disabled={saving}>
