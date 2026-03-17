@@ -687,7 +687,12 @@ function Reservas({ initData = {}, barberos, servicios }) {
             <div className="opt-grid">
               {barberos.map(b => (
                 <div key={b.id} className={`opt ${form.barbero?.id === b.id ? "sel" : ""}`} onClick={() => setForm({ ...form, barbero: b })}>
-                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: b.color, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 700, fontStyle: "italic", color: "#000", margin: "0 auto 10px" }}>{b.iniciales}</div>
+                  <div style={{ width: 64, height: 64, borderRadius: "50%", background: b.color, overflow: "hidden", margin: "0 auto 10px", flexShrink: 0 }}>
+                   {b.foto_url
+                   ? <img src={b.foto_url} alt={b.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                   : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 700, color: "#000" }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
+                  }
+                    </div>
                   <div className="opt-name">{b.nombre.split(" ")[0]}</div>
                   <div className="opt-sub">{b.especialidad.split("&")[0].trim()}</div>
                   <div style={{ color: "var(--gold)", fontSize: 12, marginTop: 5 }}>{"★".repeat(Math.round(b.rating))} {b.rating}</div>
