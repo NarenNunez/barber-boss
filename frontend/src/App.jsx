@@ -1191,20 +1191,25 @@ const aprobAbono = async id => {
             </div>
             <div className="blk">
               <div className="blk-title">Rendimiento Barberos</div>
-              {barberos.map(b => (
-                <div key={b.id} className="row">
-                  <div className="av-sm" style={{ background: b.color }}>{b.iniciales}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600 }}>{b.nombre.split(" ")[0]}</span>
-                      <span style={{ fontSize: 12, color: "var(--gold)" }}>{b.serviciosHoy} servicios</span>
-                    </div>
-                    <div className="prog">
-                      <div className="prog-fill" style={{ width: `${(b.serviciosHoy / 10) * 100}%`, background: b.color }} />
+              {barberos.map(b => {
+                const completados = reservas.filter(r => r.barbero?.id === b.id && r.estado === 'completado').length;
+                const total = reservas.filter(r => r.barbero?.id === b.id).length;
+                const pct = total > 0 ? Math.round((completados / total) * 100) : 0;
+                return (
+                  <div key={b.id} className="row">
+                    <div className="av-sm" style={{ background: b.color }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600 }}>{b.nombre.split(" ")[0]}</span>
+                        <span style={{ fontSize: 12, color: "var(--gold)" }}>{completados} completados</span>
+                      </div>
+                      <div className="prog">
+                        <div className="prog-fill" style={{ width: `${pct}%`, background: b.color }} />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
           <div className="blk">
@@ -1412,33 +1417,40 @@ const aprobAbono = async id => {
           <div className="g2">
             <div className="blk">
               <div className="blk-title">Ranking Barberos (Hoy)</div>
-              {[...barberos].sort((a, b) => b.serviciosHoy - a.serviciosHoy).map((b, i) => (
+              {[...barberos].map(b => ({
+                ...b,
+                completadosHoy: reservas.filter(r => r.barbero?.id === b.id && r.estado === 'completado').length
+              })).sort((a, b) => b.completadosHoy - a.completadosHoy).map((b, i) => (
                 <div key={b.id} className="row">
                   <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: i === 0 ? "var(--gold)" : "var(--muted)", width: 28 }}>#{i + 1}</div>
-                  <div className="av-sm" style={{ background: b.color }}>{b.iniciales}</div>
+                  <div className="av-sm" style={{ background: b.color }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, fontWeight: 600 }}>{b.nombre}</div>
                     <div className="prog" style={{ marginTop: 5 }}>
-                      <div className="prog-fill" style={{ width: `${(b.serviciosHoy / 10) * 100}%`, background: b.color }} />
+                      <div className="prog-fill" style={{ width: `${(b.completadosHoy / Math.max(...barberos.map(x => reservas.filter(r => r.barbero?.id === x.id && r.estado === 'completado').length), 1)) * 100}%`, background: b.color }} />
                     </div>
                   </div>
-                  <div style={{ fontFamily: "'Playfair Display',serif", fontStyle: "italic", fontSize: 18, color: "var(--gold)", marginLeft: 10 }}>{b.serviciosHoy}</div>
+                  <div style={{ fontFamily: "'Playfair Display',serif", fontStyle: "italic", fontSize: 18, color: "var(--gold)", marginLeft: 10 }}>{b.completadosHoy}</div>
                 </div>
               ))}
             </div>
             <div className="blk">
               <div className="blk-title">Por Servicio</div>
-              {servicios.map((s, i) => (
-                <div key={s.id} className="row">
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 15, fontStyle: "italic", fontWeight: 600 }}>{s.nombre}</div>
-                    <div style={{ fontSize: 11, color: "var(--muted)" }}>{s.duracion} min</div>
+              {servicios.map(s => {
+                const count = reservas.filter(r => r.servicio?.id === s.id && r.estado === 'completado').length;
+                const maxCount = Math.max(...servicios.map(x => reservas.filter(r => r.servicio?.id === x.id && r.estado === 'completado').length), 1);
+                return (
+                  <div key={s.id} className="row">
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 15, fontStyle: "italic", fontWeight: 600 }}>{s.nombre}</div>
+                      <div style={{ fontSize: 11, color: "var(--muted)" }}>{count} realizados</div>
+                    </div>
+                    <div className="prog" style={{ width: 80 }}>
+                      <div className="prog-fill" style={{ width: `${(count / maxCount) * 100}%`, background: "var(--gold)" }} />
+                    </div>
                   </div>
-                  <div className="prog" style={{ width: 80 }}>
-                    <div className="prog-fill" style={{ width: `${30 + ((i * 17) % 61)}%`, background: "var(--gold)" }} />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>}
