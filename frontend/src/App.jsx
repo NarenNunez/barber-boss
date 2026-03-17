@@ -457,6 +457,34 @@ function Clock() {
   return <>{t.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true })}</>;
 }
 
+function GaleriaViewer({ barberoId, color }) {
+  const [fotos, setFotos] = useState([]);
+
+  useEffect(() => {
+    api.getGaleriaBarbero(barberoId).then(data => setFotos(data)).catch(() => {});
+  }, [barberoId]);
+
+  if (fotos.length === 0) return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 20 }}>
+      {["Fade Clásico","Pompadour","Undercut","Crew Cut","Buzz Cut","Quiff"].map(g => (
+        <div key={g} style={{ aspectRatio: "1", background: `${color}10`, border: `1px solid ${color}25`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: 14, color: "var(--muted)", textAlign: "center", padding: 8 }}>{g}</div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 20 }}>
+      {fotos.map(f => (
+        <div key={f.id} style={{ aspectRatio: "1", overflow: "hidden", border: `1px solid ${color}25`, position: "relative" }}>
+          <img src={f.url} alt={f.titulo} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          {f.titulo && (
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,.6)", padding: "4px 6px", fontSize: 10, color: "#fff", textAlign: "center" }}>{f.titulo}</div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 // ─────────────────────────────────────────────
 // BARBERO MODAL
 // ─────────────────────────────────────────────
@@ -478,11 +506,7 @@ function BarberoModal({ b, onClose, onReservar }) {
         <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(212,175,55,.3),transparent)", marginBottom: 18 }} />
         <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 16, fontStyle: "italic", color: "var(--muted)", lineHeight: 1.8, marginBottom: 20 }}>{b.bio || "Especialista con años de experiencia en el arte de la barbería."}</p>
         <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: "var(--muted)", marginBottom: 10 }}>Galería de trabajos</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 20 }}>
-          {(b.galeria || ["Fade Clásico","Pompadour","Undercut","Crew Cut","Buzz Cut","Quiff"]).map(g => (
-            <div key={g} style={{ aspectRatio: "1", background: `${b.color}10`, border: `1px solid ${b.color}25`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", fontSize: 14, color: "var(--muted)", textAlign: "center", padding: 8 }}>{g}</div>
-          ))}
-        </div>
+        <GaleriaViewer barberoId={b.id} color={b.color} />
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--muted)", marginBottom: 20 }}>
           <span>Especialidad: <strong style={{ color: "#fff" }}>{b.especialidad}</strong></span>
         </div>
@@ -1455,7 +1479,72 @@ function PinLogin({ onSuccess, barberos }) {
     </div>
   );
 }
+function GaleriaEditor({ barbero }) {
+  const [fotos, setFotos] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [titulo, setTitulo] = useState("");
+  const fileRef = useRef();
 
+  const cargar = () => {
+    api.getGaleriaBarbero(barbero.id).then(data => setFotos(data)).catch(() => {});
+  };
+
+  useEffect(() => { cargar(); }, [barbero.id]);
+
+  const subir = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      await api.subirFotoGaleria(barbero.id, file, titulo || file.name.split('.')[0]);
+      setTitulo("");
+      cargar();
+    } catch (err) {
+      console.error(err);
+    }
+    setUploading(false);
+  };
+
+  const eliminar = async (foto) => {
+    if (!window.confirm("¿Eliminar esta foto?")) return;
+    await api.eliminarFotoGaleria(foto.id, foto.storage_key);
+    cargar();
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 10, marginBottom: 16, alignItems: "center" }}>
+        <input className="finput" placeholder="Título (opcional)" value={titulo}
+          onChange={e => setTitulo(e.target.value)}
+          style={{ flex: 1, padding: "8px 12px", fontSize: 12 }} />
+        <input type="file" accept="image/*" ref={fileRef} style={{ display: "none" }} onChange={subir} />
+        <button className="act-btn p" onClick={() => fileRef.current?.click()} disabled={uploading}>
+          {uploading ? "Subiendo..." : "📷 Subir foto"}
+        </button>
+      </div>
+      {fotos.length === 0 && (
+        <div style={{ textAlign: "center", padding: "32px 0", fontFamily: "'Cormorant Garamond',serif", fontSize: 16, fontStyle: "italic", color: "var(--muted)" }}>
+          Aún no hay fotos en tu galería
+        </div>
+      )}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+        {fotos.map(f => (
+          <div key={f.id} style={{ aspectRatio: "1", overflow: "hidden", border: `1px solid ${barbero.color}25`, position: "relative" }}>
+            <img src={f.url} alt={f.titulo} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.5)", opacity: 0, transition: "opacity .2s", display: "flex", alignItems: "center", justifyContent: "center" }}
+              onMouseEnter={e => e.currentTarget.style.opacity = 1}
+              onMouseLeave={e => e.currentTarget.style.opacity = 0}>
+              <button className="act-btn d" onClick={() => eliminar(f)}>🗑 Eliminar</button>
+            </div>
+            {f.titulo && (
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,.6)", padding: "4px 6px", fontSize: 10, color: "#fff", textAlign: "center" }}>{f.titulo}</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 // ─────────────────────────────────────────────
 // BARBERO PANEL
 // ─────────────────────────────────────────────
@@ -1557,11 +1646,7 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
           </div>
           <div className="blk">
             <div className="blk-title">Mi Galería</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
-              {barbero.galeria.map(g => (
-                <div key={g} style={{ aspectRatio: "1", background: `${barbero.color}0D`, border: `1px solid ${barbero.color}25`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Cormorant Garamond',serif", fontSize: 14, fontStyle: "italic", color: "var(--muted)", textAlign: "center", padding: 8 }}>{g}</div>
-              ))}
-            </div>
+            <GaleriaEditor barbero={barbero} />
           </div>
         </div>}
       </div>

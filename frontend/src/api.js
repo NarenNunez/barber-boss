@@ -102,4 +102,38 @@ export const api = {
     if (error) throw error;
     return data;
   },
+  getGaleriaBarbero: async (barberoId) => {
+    const { data, error } = await supabase
+      .from('galeria_barbero')
+      .select('id, url, titulo, orden')
+      .eq('barbero_id', barberoId)
+      .order('orden', { ascending: true });
+    if (error) throw error;
+    return data;
+  },
+
+  subirFotoGaleria: async (barberoId, file, titulo) => {
+    const ext = file.name.split('.').pop();
+    const path = `${barberoId}/${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from('fotos-barberos')
+      .upload(path, file, { upsert: true });
+    if (uploadError) throw uploadError;
+    const { data } = supabase.storage.from('fotos-barberos').getPublicUrl(path);
+    const { error } = await supabase.from('galeria_barbero').insert({
+      barbero_id: barberoId,
+      url: data.publicUrl,
+      storage_key: path,
+      titulo: titulo || 'Sin título',
+      orden: Date.now(),
+    });
+    if (error) throw error;
+    return data.publicUrl;
+  },
+
+  eliminarFotoGaleria: async (id, storage_key) => {
+    await supabase.storage.from('fotos-barberos').remove([storage_key]);
+    const { error } = await supabase.from('galeria_barbero').delete().eq('id', id);
+    if (error) throw error;
+  },
 };
