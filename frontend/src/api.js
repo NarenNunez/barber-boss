@@ -136,4 +136,33 @@ export const api = {
     const { error } = await supabase.from('galeria_barbero').delete().eq('id', id);
     if (error) throw error;
   },
+  getGananciasBarbero: async (barberoId) => {
+    const ahora = new Date();
+    const hoy = ahora.toISOString().split('T')[0];
+    
+    const lunesActual = new Date(ahora);
+    lunesActual.setDate(ahora.getDate() - ahora.getDay() + 1);
+    const semanaInicio = lunesActual.toISOString().split('T')[0];
+    
+    const mesInicio = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}-01`;
+
+    const { data, error } = await supabase
+      .from('reservas')
+      .select(`
+        fecha,
+        servicio:servicio_id ( precio )
+      `)
+      .eq('barbero_id', barberoId)
+      .eq('estado', 'completado')
+      .gte('fecha', mesInicio);
+    if (error) throw error;
+
+    const calcular = (filas) => filas.reduce((a, r) => a + (r.servicio?.precio || 0), 0);
+
+    return {
+      hoy:    calcular(data.filter(r => r.fecha === hoy)),
+      semana: calcular(data.filter(r => r.fecha >= semanaInicio)),
+      mes:    calcular(data),
+    };
+  },
 };

@@ -1545,6 +1545,40 @@ function GaleriaEditor({ barbero }) {
     </div>
   );
 }
+function GananciasPanel({ barbero, misCitas }) {
+  const [ganancias, setGanancias] = useState({ hoy: 0, semana: 0, mes: 0 });
+
+  useEffect(() => {
+    api.getGananciasBarbero(barbero.id)
+      .then(data => setGanancias(data))
+      .catch(() => {});
+  }, [barbero.id, misCitas.length]);
+
+  const pct = barbero.porcentaje || 60;
+  const calc = (total) => Math.round(total * pct / 100);
+
+  return (
+    <div className="blk" style={{ marginBottom: 14 }}>
+      <div className="blk-title">Mis Ganancias</div>
+      <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 16 }}>
+        Tu porcentaje: <strong style={{ color: "var(--gold)" }}>{pct}%</strong>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+        {[
+          ["Hoy", ganancias.hoy],
+          ["Esta Semana", ganancias.semana],
+          ["Este Mes", ganancias.mes],
+        ].map(([l, total]) => (
+          <div key={l} style={{ background: "rgba(212,175,55,.05)", border: "1px solid rgba(212,175,55,.15)", padding: 16, textAlign: "center" }}>
+            <div style={{ fontSize: 9, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 8, fontFamily: "'DM Sans',sans-serif" }}>{l}</div>
+            <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontWeight: 700, fontStyle: "italic", color: "var(--gold)" }}>{fmtCOP(calc(total))}</div>
+            <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 4 }}>de {fmtCOP(total)}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 // ─────────────────────────────────────────────
 // BARBERO PANEL
 // ─────────────────────────────────────────────
@@ -1617,29 +1651,29 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
         </div>}
 
         {tab === "stats" && <div className="fade">
-          <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 700, fontStyle: "italic", marginBottom: 22 }}>Estadísticas</div>
-          <div className="kpi-grid">
-            {[["Completados Hoy", misCitas.filter(r => r.estado === "completado").length], ["Citas Pendientes", misCitas.filter(r => r.estado === "pendiente").length], ["En Curso", misCitas.filter(r => r.estado === "en_curso").length]].map(([l, v]) => (
-              <div key={l} className="kpi"><div className="kpi-lbl">{l}</div><div className="kpi-val gold">{v}</div></div>
-            ))}
+  <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 700, fontStyle: "italic", marginBottom: 22 }}>Estadísticas</div>
+  <div className="kpi-grid">
+    {[["Completados Hoy", misCitas.filter(r => r.estado === "completado").length], ["Citas Pendientes", misCitas.filter(r => r.estado === "pendiente").length], ["En Curso", misCitas.filter(r => r.estado === "en_curso").length]].map(([l, v]) => (
+      <div key={l} className="kpi"><div className="kpi-lbl">{l}</div><div className="kpi-val gold">{v}</div></div>
+    ))}
+  </div>
+  <GananciasPanel barbero={barbero} misCitas={misCitas} />
+  <div className="blk">
+    <div className="blk-title">Ranking del Equipo</div>
+    {[...barberos].sort((a, b) => b.nombre.localeCompare(a.nombre)).map((b, i) => (
+      <div key={b.id} className="row">
+        <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: i === 0 ? "var(--gold)" : "var(--muted)", width: 28 }}>#{i + 1}</div>
+        <div className="av-sm" style={{ background: b.color, border: b.id === barbero.id ? "2px solid var(--gold)" : "none" }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: b.id === barbero.id ? 700 : 400, fontSize: 13, color: b.id === barbero.id ? "#fff" : "var(--muted)" }}>{b.nombre}</div>
+          <div className="prog" style={{ marginTop: 5 }}>
+            <div className="prog-fill" style={{ width: "100%", background: b.id === barbero.id ? "var(--gold)" : b.color, opacity: b.id === barbero.id ? 1 : 0.3 }} />
           </div>
-          <div className="blk">
-            <div className="blk-title">Ranking del Equipo</div>
-            {[...barberos].sort((a, b) => b.serviciosHoy - a.serviciosHoy).map((b, i) => (
-              <div key={b.id} className="row">
-                <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: i === 0 ? "var(--gold)" : "var(--muted)", width: 28 }}>#{i + 1}</div>
-                <div className="av-sm" style={{ background: b.color, border: b.id === barbero.id ? "2px solid var(--gold)" : "none" }}>{b.iniciales}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: b.id === barbero.id ? 700 : 400, fontSize: 13, color: b.id === barbero.id ? "#fff" : "var(--muted)" }}>{b.nombre}</div>
-                  <div className="prog" style={{ marginTop: 5 }}>
-                    <div className="prog-fill" style={{ width: `100%`, background: b.id === barbero.id ? "var(--gold)" : b.color, opacity: b.id === barbero.id ? 1 : 0.3 }} />
-                  </div>
-                </div>
-                <div style={{ fontFamily: "'Playfair Display',serif", fontStyle: "italic", fontSize: 18, color: b.id === barbero.id ? "var(--gold)" : "var(--muted)", marginLeft: 10 }}>{b.serviciosHoy}</div>
-              </div>
-            ))}
-          </div>
-        </div>}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>}
 
         {tab === "perfil" && <div className="fade">
           <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 700, fontStyle: "italic", marginBottom: 22 }}>Mi Perfil</div>
