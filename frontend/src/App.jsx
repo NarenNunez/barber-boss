@@ -1130,7 +1130,12 @@ const aprobAbono = async id => {
             {barberos.map(b => (
               <div key={b.id} className="blk" style={{ borderLeft: `3px solid ${b.color}` }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
-                  <div style={{ width: 54, height: 54, borderRadius: "50%", background: b.color, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", fontWeight: 700, color: "#000" }}>{b.iniciales}</div>
+                  <div style={{ width: 54, height: 54, borderRadius: "50%", background: b.color, overflow: "hidden", flexShrink: 0 }}>
+                  {b.foto_url
+                   ? <img src={b.foto_url} alt={b.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", fontWeight: 700, color: "#000" }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
+                     }
+                    </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", fontWeight: 700 }}>{b.nombre}</div>
                     <div style={{ fontSize: 11, color: "var(--muted)", letterSpacing: 1 }}>{b.especialidad}</div>
