@@ -1139,7 +1139,7 @@ const aprobAbono = async id => {
                 </div>
                 <div className="sep" style={{ margin: "12px 0" }} />
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
-                  {[["Rating", `${b.rating} ★`], ["Servicios Hoy", b.serviciosHoy], ["Cola", `${b.cola} personas`], ["Horario", b.horario]].map(([l, v]) => (
+                  {[["Horario", `${b.horario_inicio?.slice(0,5)} – ${b.horario_fin?.slice(0,5)}`], ["Especialidad", b.especialidad]].map(([l, v]) => (
                     <div key={l}>
                       <div style={{ fontSize: 9, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", fontFamily: "'DM Sans',sans-serif" }}>{l}</div>
                       <div style={{ fontSize: 13, fontWeight: 600 }}>{v}</div>
