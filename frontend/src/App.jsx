@@ -1565,7 +1565,12 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
   return (
     <div className="bp">
       <div className="bp-header">
-        <div className="bp-av" style={{ background: barbero.color }}>{barbero.iniciales}</div>
+        <div className="bp-av" style={{ background: barbero.color, overflow: "hidden", padding: 0 }}>
+          {barbero.foto_url
+            ? <img src={barbero.foto_url} alt={barbero.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            : barbero.nombre?.slice(0,2).toUpperCase()
+          }
+        </div>
         <div>
           <div className="bp-name">{barbero.nombre}</div>
           <div className="bp-esp">{barbero.especialidad}</div>
@@ -1614,7 +1619,7 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
         {tab === "stats" && <div className="fade">
           <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 700, fontStyle: "italic", marginBottom: 22 }}>Estadísticas</div>
           <div className="kpi-grid">
-            {[["Servicios Hoy", barbero.serviciosHoy], ["Citas Pendientes", misCitas.filter(r => r.estado === "pendiente").length], ["Rating", `${barbero.rating} ★`]].map(([l, v]) => (
+            {[["Completados Hoy", misCitas.filter(r => r.estado === "completado").length], ["Citas Pendientes", misCitas.filter(r => r.estado === "pendiente").length], ["En Curso", misCitas.filter(r => r.estado === "en_curso").length]].map(([l, v]) => (
               <div key={l} className="kpi"><div className="kpi-lbl">{l}</div><div className="kpi-val gold">{v}</div></div>
             ))}
           </div>
@@ -1627,7 +1632,7 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: b.id === barbero.id ? 700 : 400, fontSize: 13, color: b.id === barbero.id ? "#fff" : "var(--muted)" }}>{b.nombre}</div>
                   <div className="prog" style={{ marginTop: 5 }}>
-                    <div className="prog-fill" style={{ width: `${(b.serviciosHoy / 10) * 100}%`, background: b.id === barbero.id ? "var(--gold)" : b.color, opacity: b.id === barbero.id ? 1 : 0.5 }} />
+                    <div className="prog-fill" style={{ width: `100%`, background: b.id === barbero.id ? "var(--gold)" : b.color, opacity: b.id === barbero.id ? 1 : 0.3 }} />
                   </div>
                 </div>
                 <div style={{ fontFamily: "'Playfair Display',serif", fontStyle: "italic", fontSize: 18, color: b.id === barbero.id ? "var(--gold)" : "var(--muted)", marginLeft: 10 }}>{b.serviciosHoy}</div>
