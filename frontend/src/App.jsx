@@ -849,6 +849,55 @@ function Reservas({ initData = {}, barberos, servicios }) {
     </div>
   );
 }
+function EditBarberoForm({ barbero, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    nombre:        barbero.nombre || "",
+    especialidad:  barbero.especialidad || "",
+    bio:           barbero.bio || "",
+    horario_inicio: barbero.horario_inicio || "",
+    horario_fin:    barbero.horario_fin || "",
+    color:         barbero.color || "#D4AF37",
+  });
+  const [saving, setSaving] = useState(false);
+
+  const guardar = async () => {
+    setSaving(true);
+    await supabase.from('barberos').update(form).eq('id', barbero.id);
+    setSaving(false);
+    onSaved();
+  };
+
+  return (
+    <div>
+      {[
+        ["Nombre", "nombre"],
+        ["Especialidad", "especialidad"],
+        ["Bio", "bio"],
+        ["Horario inicio (HH:MM:SS)", "horario_inicio"],
+        ["Horario fin (HH:MM:SS)", "horario_fin"],
+      ].map(([l, k]) => (
+        <div className="field" key={k}>
+          <label className="flabel">{l}</label>
+          <input className="finput" value={form[k]} onChange={e => setForm({ ...form, [k]: e.target.value })} />
+        </div>
+      ))}
+      <div className="field">
+        <label className="flabel">Color</label>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <input type="color" value={form.color} onChange={e => setForm({ ...form, color: e.target.value })}
+            style={{ width: 48, height: 36, border: "none", background: "none", cursor: "pointer" }} />
+          <span style={{ fontSize: 13, color: "var(--muted)" }}>{form.color}</span>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+        <button className="btn-back" style={{ flex: 1 }} onClick={onClose}>Cancelar</button>
+        <button className="btn-next" style={{ flex: 2 }} onClick={guardar} disabled={saving}>
+          {saving ? "Guardando..." : "Guardar Cambios"}
+        </button>
+      </div>
+    </div>
+  );
+}
 // ─────────────────────────────────────────────
 // SUPER ADMIN
 // ─────────────────────────────────────────────
@@ -859,6 +908,7 @@ function SuperAdmin({ barberos, servicios }) {
   const [tab, setTab] = useState("dashboard");
   const [reservas, setReservas] = useState([]);
   const hoy = new Date().toISOString().split('T')[0];
+  const [editModal, setEditModal] = useState(null);
 
   useEffect(() => {
     api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
@@ -1152,9 +1202,13 @@ const aprobAbono = async id => {
                   ))}
                 </div>
                 <div style={{ display: "flex", gap: 7 }}>
-                  <button className="act-btn p" style={{ flex: 1 }}>Editar</button>
-                  <button className="act-btn g" style={{ flex: 1 }}>Ver Citas</button>
-                  <button className="act-btn d">⊗</button>
+                  <button className="act-btn p" style={{ flex: 1 }} onClick={() => setEditModal(b)}>Editar</button>
+                  <button className="act-btn g" style={{ flex: 1 }} onClick={() => { setTab("reservas"); }}>Ver Citas</button>
+                  <button className="act-btn d" onClick={async () => {
+                                   if (!window.confirm(`¿Eliminar a ${b.nombre}?`)) return;
+                                  await supabase.from('barberos').update({ activo: false }).eq('id', b.id);
+                                  window.location.reload();
+                                  }}>⊗</button>
                 </div>
               </div>
             ))}
@@ -1280,6 +1334,15 @@ const aprobAbono = async id => {
           </div>
         </div>
       )}
+      {editModal && (
+  <div className="overlay fade" onClick={e => e.target === e.currentTarget && setEditModal(null)}>
+    <div className="modal">
+      <button className="modal-close" onClick={() => setEditModal(null)}>✕</button>
+      <div className="modal-title">Editar Barbero</div>
+      <EditBarberoForm barbero={editModal} onClose={() => setEditModal(null)} onSaved={() => { setEditModal(null); window.location.reload(); }} />
+    </div>
+  </div>
+)}
     </div>
   );
 }
