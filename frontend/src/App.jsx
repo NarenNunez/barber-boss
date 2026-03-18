@@ -1277,13 +1277,15 @@ function SuperAdmin({ barberos, servicios }) {
   const hoy = new Date().toISOString().split('T')[0];
   const [editModal, setEditModal] = useState(null);
 
+  const [fechaFiltro, setFechaFiltro] = useState(null);
+
   useEffect(() => {
-    api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
+    api.getReservas(fechaFiltro).then(data => setReservas(data)).catch(() => {});
     const unsub = api.suscribirReservas(() => {
-      api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
+      api.getReservas(fechaFiltro).then(data => setReservas(data)).catch(() => {});
     });
     return unsub;
-  }, []);
+  }, [fechaFiltro]);
   const [abonoModal, setAbonoModal] = useState(null);
   const PIN_ADMIN = "0000"; // ← Cambia este PIN por el que quieras
 
@@ -1518,7 +1520,17 @@ const aprobAbono = async id => {
         </div>}
 
         {tab === "reservas" && <div className="fade">
-          <div className="pg-head"><div className="pg-title">Gestión de Citas</div><div className="pg-sub">Todas las reservas del día</div></div>
+          <div className="pg-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <div className="pg-title">Gestión de Citas</div>
+              <div className="pg-sub">{fechaFiltro ? `Reservas del ${fechaFiltro}` : "Todas las reservas"}</div>
+            </div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input type="date" value={fechaFiltro || ""} onChange={e => setFechaFiltro(e.target.value || null)}
+                style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--text)", padding: "7px 12px", fontSize: 12, fontFamily: "'DM Sans',sans-serif", cursor: "pointer" }} />
+              {fechaFiltro && <button className="act-btn g" onClick={() => setFechaFiltro(null)}>Ver todas</button>}
+            </div>
+          </div>
           <div className="blk">
             <table className="tbl">
               <thead><tr><th>Hora</th><th>Cliente</th><th>Barbero</th><th>Servicio</th><th>Abono</th><th>Estado</th><th>Acciones</th></tr></thead>
