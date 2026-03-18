@@ -817,7 +817,7 @@ function Reservas({ initData = {}, barberos, servicios }) {
               <div className="info-row" style={{ borderTop: "1px solid rgba(212,175,55,.15)", marginTop: 6, paddingTop: 8 }}><span style={{ color: "var(--muted)" }}>Monto mínimo</span><span style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, fontStyle: "italic", color: "var(--gold)" }}>{fmtCOP(ABONO_MIN)}</span></div>
             </div>
             <div className="flabel" style={{ marginBottom: 0 }}>Adjunta el comprobante de pago</div>
-            <input type="file" accept="image/*" ref={fileRef} style={{ display: "none" }} onChange={e => e.target.files[0] && setComprobante(e.target.files[0].name)} />
+            <input type="file" accept="image/*" ref={fileRef} style={{ display: "none" }} onChange={e => e.target.files[0] && setComprobante(e.target.files[0])} />
             {!comprobante ? (
               <div className="upload-zone" onClick={() => fileRef.current?.click()}>
                 <div className="upload-icon">📎</div>
@@ -827,7 +827,7 @@ function Reservas({ initData = {}, barberos, servicios }) {
             ) : (
               <div className="upload-preview">
                 <span>✅</span>
-                <span>{comprobante}</span>
+                <span>{comprobante?.name || comprobante}</span>
                 <button style={{ marginLeft: "auto", background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 12 }} onClick={() => setComprobante(null)}>Cambiar</button>
               </div>
             )}
@@ -855,16 +855,32 @@ function Reservas({ initData = {}, barberos, servicios }) {
               <button className="btn-back" onClick={() => setStep(6)}>← Atrás</button>
               <button className="btn-next" onClick={async () => {
                 try {
-                  await api.crearReserva({
-                    cliente_nombre:   form.nombre,
-                    cliente_telefono: form.telefono,
-                    cliente_email:    form.email,
-                    barbero_id:       form.barbero?.id,
-                    servicio_id:      form.servicio?.id,
-                    fecha_iso:        form.fechaISO,
-                    hora_inicio:      form.hora24,
-                    notas:            `Abono vía ${abonoMetodo}`,
-                  });
+                  let comprobante_url = null;
+                  if (comprobante && comprobante instanceof File) {
+                  const ext = comprobante.name.split('.').pop();
+                   const path = `comprobantes/${Date.now()}.${ext}`;
+                     const { error: uploadError } = await supabase
+                      .from('comprobantes')
+                     .upload(path, comprobante, { upsert: true });
+                      if (!uploadError) {
+                    const { data: urlData } = supabase.storage
+                     .from('comprobantes')
+                     .getPublicUrl(path);
+                       comprobante_url = urlData.publicUrl;
+                      }
+                      }
+
+                       await api.crearReserva({
+                         cliente_nombre:   form.nombre,
+                         cliente_telefono: form.telefono,
+                         cliente_email:    form.email,
+                        barbero_id:       form.barbero?.id,
+                         servicio_id:      form.servicio?.id,
+                           fecha_iso:        form.fechaISO,
+                        hora_inicio:      form.hora24,
+                        notas:            `Abono vía ${abonoMetodo}`,
+                         comprobante_url,
+                        });
                   setStep(8);
                 } catch (err) {
                   console.error('Error al crear reserva:', err);
@@ -907,8 +923,8 @@ function EditBarberoForm({ barbero, onClose, onSaved }) {
       const ext = fotoFile.name.split('.').pop();
       const path = `barbero-${barbero.id}.${ext}`;
       const { error: uploadError } = await supabase.storage
-        .from('fotos-barberos')
-        .upload(path, fotoFile, { upsert: true });
+    .from('comprobantes')
+    .upload(path, comprobante, { upsert: true });
       if (!uploadError) {
         const { data } = supabase.storage.from('fotos-barberos').getPublicUrl(path);
         foto_url = data.publicUrl;

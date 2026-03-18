@@ -76,13 +76,14 @@ export const api = {
 
   crearReserva: (data) => {
     const body = {
-      cliente_nombre: data.cliente_nombre,
-      cliente_tel:    data.cliente_telefono,
-      barbero_id:     data.barbero_id,
-      servicio_id:    data.servicio_id,
-      fecha:          data.fecha_iso,
-      hora_inicio:    data.hora_inicio,
-      notas:          data.notas || null,
+      cliente_nombre:  data.cliente_nombre,
+      cliente_tel:     data.cliente_telefono,
+      barbero_id:      data.barbero_id,
+      servicio_id:     data.servicio_id,
+      fecha:           data.fecha_iso,
+      hora_inicio:     data.hora_inicio,
+      notas:           data.notas || null,
+      comprobante_url: data.comprobante_url || null,
     };
     if (data.cliente_email) body.cliente_email = data.cliente_email;
     return post('/api/reservas', body);
