@@ -1416,8 +1416,8 @@ const aprobAbono = async id => {
                   <div key={r.id} className="row">
                     <div className="dot" style={{ background: r.barbero?.color }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: 13 }}>{r.cliente}</div>
-                      <div style={{ fontSize: 11, color: "var(--muted)" }}>{r.servicio} · {r.barbero?.nombre.split(" ")[0]}</div>
+                      <div style={{ fontWeight: 600, fontSize: 13 }}>{r.cliente_nombre}</div>
+                      <div style={{ fontSize: 11, color: "var(--muted)" }}>{r.servicio?.nombre} · {r.barbero?.nombre.split(" ")[0]}</div>
                     </div>
                     <div style={{ fontSize: 12, color: "#9CA3AF", marginRight: 8 }}>{r.hora}</div>
                     <span className={`badge ${r.estado}`}>{r.estado.replace("_", " ")}</span>
@@ -1490,10 +1490,10 @@ const aprobAbono = async id => {
                   
                   return (
                     <tr key={r.id}>
-                      <td><div style={{ fontWeight: 600 }}>{r.cliente}</div><div style={{ fontSize: 11, color: "var(--muted)" }}>📱 {r.telefono}</div></td>
+                      <td><div style={{ fontWeight: 600 }}>{r.cliente_nombre}</div><div style={{ fontSize: 11, color: "var(--muted)" }}>📱 {r.cliente_tel}</div></td>
                       <td><div style={{ display: "flex", alignItems: "center", gap: 7 }}><div className="av-sm" style={{ background: r.barbero?.color, width: 26, height: 26, fontSize: 10 }}>{r.barbero?.nombre?.slice(0,2).toUpperCase()}</div>{r.barbero?.nombre.split(" ")[0]}</div></td>
                       <td style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", color: "var(--gold)" }}>{r.hora}</td>
-                      <td style={{ fontSize: 12 }}>{r.servicio}</td>
+                      <td style={{ fontSize: 12 }}>{r.servicio?.nombre}</td>
                       <td>
                         {r.comprobante
                           ? <button className="act-btn g" onClick={() => setAbonoModal(r)}>📎 Ver</button>
@@ -1540,9 +1540,9 @@ const aprobAbono = async id => {
                   return (
                     <tr key={r.id}>
                       <td style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", color: "var(--gold)" }}>{r.hora}</td>
-                      <td><div style={{ fontWeight: 600 }}>{r.cliente}</div><div style={{ fontSize: 11, color: "var(--muted)" }}>📱 {r.telefono}</div></td>
+                      <td><div style={{ fontWeight: 600 }}>{r.cliente_nombre}</div><div style={{ fontSize: 11, color: "var(--muted)" }}>📱 {r.cliente_tel}</div></td>
                       <td><div style={{ display: "flex", alignItems: "center", gap: 7 }}><div className="av-sm" style={{ background: r.barbero?.color, width: 26, height: 26, fontSize: 10 }}>{r.barbero?.nombre?.slice(0,2).toUpperCase()}</div>{r.barbero?.nombre.split(" ")[0]}</div></td>
-                      <td style={{ fontSize: 12 }}>{r.servicio}</td>
+                      <td style={{ fontSize: 12 }}>{r.servicio?.nombre}</td>
                       <td><span className={`badge ${r.abono_estado}`}>{r.abono_estado.replace("_", " ")}</span></td>
                       <td><span className={`badge ${r.estado}`}>{r.estado.replace("_", " ")}</span></td>
                       <td>
@@ -1952,8 +1952,8 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
                 <div className="cita-hora-ampm">{r.hora.split(" ")[1]}</div>
               </div>
               <div style={{ flex: 1 }}>
-                <div className="cita-nombre">{r.cliente}</div>
-                <div className="cita-svc">{r.servicio}</div>
+                <div className="cita-nombre">{r.cliente_nombre}</div>
+                <div className="cita-svc">{r.servicio?.nombre}</div>
                 <span className={`badge ${r.abono_estado}`} style={{ marginTop: 4, display: "inline-block" }}>Abono: {r.abono_estado.replace("_", " ")}</span>
               </div>
               <span className={`badge ${r.estado}`}>{r.estado.replace("_", " ")}</span>
@@ -1964,7 +1964,7 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
                 {r.estado === "en_curso" && (
                   <button className="act-btn p" onClick={() => setReservas(p => p.map(x => x.id === r.id ? { ...x, estado: "completado" } : x))}>✓ Completar</button>
                 )}
-                <a href={`https://wa.me/57${r.telefono}`} target="_blank" rel="noreferrer">
+                <a href={`https://wa.me/57${r.cliente_tel}`} target="_blank" rel="noreferrer">
                   <button className="act-btn" style={{ background: "rgba(37,211,102,.12)", color: "#25D366", borderRadius: 1 }}>📱</button>
                 </a>
               </div>
