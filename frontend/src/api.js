@@ -24,6 +24,11 @@ export const api = {
   getServicios: () => get('/api/servicios'),
 
   getReservas: async (fecha) => {
+    const ahora = new Date();
+    const lunesActual = new Date(ahora);
+    lunesActual.setDate(ahora.getDate() - ahora.getDay() + 1);
+    const semanaInicio = lunesActual.toISOString().split('T')[0];
+
     let q = supabase
       .from('reservas')
       .select(`
@@ -33,8 +38,15 @@ export const api = {
         barbero:barbero_id ( id, nombre, color ),
         servicio:servicio_id ( id, nombre, precio )
       `)
+      .order('fecha', { ascending: true })
       .order('hora_inicio', { ascending: true });
-    if (fecha) q = q.eq('fecha', fecha);
+
+    if (fecha) {
+      q = q.eq('fecha', fecha);
+    } else {
+      q = q.gte('fecha', semanaInicio);
+    }
+
     const { data, error } = await q;
     if (error) throw error;
     return data;
