@@ -2241,16 +2241,6 @@ export default function App() {
           <button className="nav-cta" onClick={() => nav("reservas")}>Reservar</button>
         </nav>
       )}
-
-      {!showNav && view !== "selector" && (
-        <div style={{ position: "fixed", top: 16, right: 16, zIndex: 300 }}>
-          <button onClick={() => { setBarberoLogueado(null); nav("selector"); }}
-            style={{ background: "rgba(0,0,0,.7)", border: "1px solid rgba(255,255,255,.1)", color: "var(--muted)", padding: "7px 14px", cursor: "pointer", fontSize: 11, letterSpacing: 1, fontFamily: "'DM Sans',sans-serif", backdropFilter: "blur(10px)" }}>
-            ← Menú
-          </button>
-        </div>
-      )}
-
       {view === "selector" && <Selector onSelect={v => { setBarberoLogueado(null); nav(v); }} />}
       {view === "home"     && <Home onNav={nav} barberos={barberos} servicios={servicios} />}
       {view === "reservas" && <Reservas initData={initData} barberos={barberos} servicios={servicios} />}
