@@ -1033,6 +1033,238 @@ function GananciasAdmin({ barberos }) {
     </div>
   );
 }
+function Tienda({ }) {
+  const [tab, setTab] = useState("productos");
+  const [productos, setProductos] = useState([]);
+  const [ventas, setVentas] = useState([]);
+  const [modalProducto, setModalProducto] = useState(null);
+  const [modalVenta, setModalVenta] = useState(null);
+  const [formProducto, setFormProducto] = useState({ nombre: "", precio: "", categoria: "bebidas", stock: "" });
+  const [cantidadVenta, setCantidadVenta] = useState(1);
+  const [saving, setSaving] = useState(false);
+
+  const cargarProductos = () => api.getProductos().then(setProductos).catch(() => {});
+  const cargarVentas = () => api.getVentas().then(setVentas).catch(() => {});
+
+  useEffect(() => { cargarProductos(); cargarVentas(); }, []);
+
+  const guardarProducto = async () => {
+    setSaving(true);
+    try {
+      if (modalProducto?.id) {
+        await api.actualizarProducto(modalProducto.id, {
+          nombre: formProducto.nombre,
+          precio: Number(formProducto.precio),
+          categoria: formProducto.categoria,
+          stock: Number(formProducto.stock),
+        });
+      } else {
+        await api.crearProducto({
+          nombre: formProducto.nombre,
+          precio: Number(formProducto.precio),
+          categoria: formProducto.categoria,
+          stock: Number(formProducto.stock),
+        });
+      }
+      setModalProducto(null);
+      cargarProductos();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
+  const eliminar = async (id) => {
+    if (!window.confirm("¿Eliminar este producto?")) return;
+    await api.eliminarProducto(id);
+    cargarProductos();
+  };
+
+  const registrarVenta = async () => {
+    if (!modalVenta) return;
+    setSaving(true);
+    try {
+      await api.registrarVenta(modalVenta.id, cantidadVenta, modalVenta.precio);
+      setModalVenta(null);
+      setCantidadVenta(1);
+      cargarVentas();
+      cargarProductos();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
+  const abrirEditar = (p) => {
+    setFormProducto({ nombre: p.nombre, precio: p.precio, categoria: p.categoria, stock: p.stock });
+    setModalProducto(p);
+  };
+
+  const abrirNuevo = () => {
+    setFormProducto({ nombre: "", precio: "", categoria: "bebidas", stock: "" });
+    setModalProducto({ nuevo: true });
+  };
+
+  const hoy = new Date().toISOString().split('T')[0];
+  const totalHoy = ventas.filter(v => v.fecha === hoy).reduce((a, v) => a + v.total, 0);
+  const totalMes = ventas.reduce((a, v) => a + v.total, 0);
+  const categorias = ["bebidas", "camisas", "gorras", "otros"];
+
+  return (
+    <div className="fade">
+      <div className="pg-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <div className="pg-title">Tienda</div>
+          <div className="pg-sub">Productos y ventas del negocio</div>
+        </div>
+        <button className="btn-gold" style={{ padding: "8px 20px", fontSize: 12 }} onClick={abrirNuevo}>+ Nuevo Producto</button>
+      </div>
+
+      <div className="kpi-grid" style={{ marginBottom: 20 }}>
+        {[
+          ["Productos Activos", productos.length],
+          ["Ventas Hoy", fmtCOP(totalHoy)],
+          ["Ventas del Mes", fmtCOP(totalMes)],
+          ["Transacciones Hoy", ventas.filter(v => v.fecha === hoy).length],
+        ].map(([l, v]) => (
+          <div key={l} className="kpi">
+            <div className="kpi-lbl">{l}</div>
+            <div className="kpi-val gold" style={{ fontSize: 24 }}>{v}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+        {[["productos", "📦 Productos"], ["ventas", "💰 Historial Ventas"]].map(([k, l]) => (
+          <button key={k} className={`abono-tab ${tab === k ? "act" : ""}`} onClick={() => setTab(k)}>{l}</button>
+        ))}
+      </div>
+
+      {tab === "productos" && (
+        <div>
+          {categorias.map(cat => {
+            const prods = productos.filter(p => p.categoria === cat);
+            if (prods.length === 0) return null;
+            return (
+              <div key={cat} className="blk" style={{ marginBottom: 14 }}>
+                <div className="blk-title">{cat.charAt(0).toUpperCase() + cat.slice(1)}</div>
+                <table className="tbl">
+                  <thead>
+                    <tr><th>Producto</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
+                  </thead>
+                  <tbody>
+                    {prods.map(p => (
+                      <tr key={p.id}>
+                        <td style={{ fontWeight: 600 }}>{p.nombre}</td>
+                        <td style={{ fontFamily: "'Playfair Display',serif", fontStyle: "italic", color: "var(--gold)", fontSize: 16 }}>{fmtCOP(p.precio)}</td>
+                        <td>
+                          <span style={{ color: p.stock <= 3 ? "var(--ocupado)" : p.stock <= 10 ? "var(--proximo)" : "var(--libre)", fontWeight: 600 }}>
+                            {p.stock} uds
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <button className="act-btn s" onClick={() => { setModalVenta(p); setCantidadVenta(1); }}>💰 Vender</button>
+                            <button className="act-btn g" onClick={() => abrirEditar(p)}>Editar</button>
+                            <button className="act-btn d" onClick={() => eliminar(p.id)}>⊗</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })}
+          {productos.length === 0 && (
+            <div className="blk" style={{ textAlign: "center", padding: "48px 0" }}>
+              <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, fontStyle: "italic", color: "var(--muted)" }}>No hay productos — agrega el primero</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "ventas" && (
+        <div className="blk">
+          <table className="tbl">
+            <thead>
+              <tr><th>Fecha</th><th>Producto</th><th>Categoría</th><th>Cantidad</th><th>Precio Unit.</th><th>Total</th></tr>
+            </thead>
+            <tbody>
+              {ventas.map(v => (
+                <tr key={v.id}>
+                  <td style={{ fontSize: 12, color: "var(--muted)" }}>{v.fecha}</td>
+                  <td style={{ fontWeight: 600 }}>{v.producto?.nombre}</td>
+                  <td><span className="badge pendiente">{v.producto?.categoria}</span></td>
+                  <td style={{ textAlign: "center" }}>{v.cantidad}</td>
+                  <td style={{ fontSize: 13, color: "var(--muted)" }}>{fmtCOP(v.precio_unitario)}</td>
+                  <td style={{ fontFamily: "'Playfair Display',serif", fontStyle: "italic", color: "var(--gold)", fontSize: 16 }}>{fmtCOP(v.total)}</td>
+                </tr>
+              ))}
+              {ventas.length === 0 && (
+                <tr><td colSpan={6} style={{ textAlign: "center", padding: 32, color: "var(--muted)", fontStyle: "italic" }}>Sin ventas este mes</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {modalProducto && (
+        <div className="overlay fade" onClick={e => e.target === e.currentTarget && setModalProducto(null)}>
+          <div className="modal">
+            <button className="modal-close" onClick={() => setModalProducto(null)}>✕</button>
+            <div className="modal-title">{modalProducto.nuevo ? "Nuevo Producto" : "Editar Producto"}</div>
+            {[["Nombre", "nombre", "text"], ["Precio", "precio", "number"], ["Stock", "stock", "number"]].map(([l, k, t]) => (
+              <div className="field" key={k}>
+                <label className="flabel">{l}</label>
+                <input className="finput" type={t} value={formProducto[k]} onChange={e => setFormProducto({ ...formProducto, [k]: e.target.value })} />
+              </div>
+            ))}
+            <div className="field">
+              <label className="flabel">Categoría</label>
+              <select className="fselect" value={formProducto.categoria} onChange={e => setFormProducto({ ...formProducto, categoria: e.target.value })}>
+                {categorias.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+              </select>
+            </div>
+            <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+              <button className="btn-back" style={{ flex: 1 }} onClick={() => setModalProducto(null)}>Cancelar</button>
+              <button className="btn-next" style={{ flex: 2 }} onClick={guardarProducto} disabled={saving || !formProducto.nombre || !formProducto.precio}>
+                {saving ? "Guardando..." : "Guardar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalVenta && (
+        <div className="overlay fade" onClick={e => e.target === e.currentTarget && setModalVenta(null)}>
+          <div className="modal">
+            <button className="modal-close" onClick={() => setModalVenta(null)}>✕</button>
+            <div className="modal-title">Registrar Venta</div>
+            <div style={{ background: "rgba(212,175,55,.06)", border: "1px solid rgba(212,175,55,.2)", padding: 16, marginBottom: 20 }}>
+              <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, fontStyle: "italic", marginBottom: 4 }}>{modalVenta.nombre}</div>
+              <div style={{ fontSize: 13, color: "var(--muted)" }}>Precio: <strong style={{ color: "var(--gold)" }}>{fmtCOP(modalVenta.precio)}</strong> · Stock: <strong style={{ color: modalVenta.stock <= 3 ? "var(--ocupado)" : "var(--libre)" }}>{modalVenta.stock} uds</strong></div>
+            </div>
+            <div className="field">
+              <label className="flabel">Cantidad</label>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <button className="act-btn g" onClick={() => setCantidadVenta(Math.max(1, cantidadVenta - 1))}>−</button>
+                <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 28, fontStyle: "italic", color: "var(--gold)", minWidth: 40, textAlign: "center" }}>{cantidadVenta}</span>
+                <button className="act-btn g" onClick={() => setCantidadVenta(Math.min(modalVenta.stock, cantidadVenta + 1))}>+</button>
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderTop: "1px solid var(--border)", marginBottom: 20 }}>
+              <span style={{ color: "var(--muted)" }}>Total</span>
+              <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: "var(--gold)" }}>{fmtCOP(cantidadVenta * modalVenta.precio)}</span>
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button className="btn-back" style={{ flex: 1 }} onClick={() => setModalVenta(null)}>Cancelar</button>
+              <button className="btn-next" style={{ flex: 2 }} onClick={registrarVenta} disabled={saving || cantidadVenta < 1}>
+                {saving ? "Registrando..." : "✓ Confirmar Venta"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 // ─────────────────────────────────────────────
 // SUPER ADMIN
 // ─────────────────────────────────────────────
@@ -1108,6 +1340,7 @@ function SuperAdmin({ barberos, servicios }) {
     { id: "barberos",  icon: "✂️", label: "Gestión Barberos" },
     { id: "calendario",icon: "🗓", label: "Calendario" },
     { id: "reportes",  icon: "📈", label: "Reportes" },
+    { id: "tienda", icon: "🛍️", label: "Tienda" },
   ];
 
 const aprobAbono = async id => {
@@ -1152,6 +1385,7 @@ const aprobAbono = async id => {
       </div>
 
       <div className="admin-main">
+        {tab === "tienda" && <Tienda />}
 
         {tab === "dashboard" && <div className="fade">
           <div className="pg-head">

@@ -187,4 +187,67 @@ export const api = {
     if (error) throw error;
     return { data, hoy, semanaInicio, mesInicio };
   },
+  getProductos: async () => {
+    const { data, error } = await supabase
+      .from('productos')
+      .select('*')
+      .eq('activo', true)
+      .order('categoria', { ascending: true });
+    if (error) throw error;
+    return data;
+  },
+
+  crearProducto: async (producto) => {
+    const { data, error } = await supabase
+      .from('productos')
+      .insert(producto)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  actualizarProducto: async (id, cambios) => {
+    const { data, error } = await supabase
+      .from('productos')
+      .update(cambios)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  eliminarProducto: async (id) => {
+    const { error } = await supabase
+      .from('productos')
+      .update({ activo: false })
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  getVentas: async () => {
+    const ahora = new Date();
+    const mesInicio = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}-01`;
+    const { data, error } = await supabase
+      .from('ventas')
+      .select(`id, cantidad, precio_unitario, total, fecha, created_at, producto:producto_id ( id, nombre, categoria )`)
+      .gte('fecha', mesInicio)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+
+  registrarVenta: async (producto_id, cantidad, precio_unitario) => {
+    const total = cantidad * precio_unitario;
+    const fecha = new Date().toISOString().split('T')[0];
+    const { data, error } = await supabase
+      .from('ventas')
+      .insert({ producto_id, cantidad, precio_unitario, total, fecha })
+      .select()
+      .single();
+    if (error) throw error;
+    await supabase.from('productos').update({ stock: supabase.rpc('decrement', { x: cantidad }) });
+    return data;
+  },
 };
