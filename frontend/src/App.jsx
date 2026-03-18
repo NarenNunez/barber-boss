@@ -1495,7 +1495,7 @@ const aprobAbono = async id => {
                       <td style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", color: "var(--gold)" }}>{r.hora}</td>
                       <td style={{ fontSize: 12 }}>{r.servicio?.nombre}</td>
                       <td>
-                        {r.comprobante
+                        {r.comprobante_url
                           ? <button className="act-btn g" onClick={() => setAbonoModal(r)}>📎 Ver</button>
                           : <span style={{ fontSize: 11, color: "var(--muted)" }}>Sin comp.</span>}
                       </td>
