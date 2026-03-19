@@ -288,7 +288,7 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .kpi-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-family:'DM Sans',sans-serif}
 .kpi-val{font-family:'Playfair Display',serif;font-size:36px;font-weight:700;font-style:italic;line-height:1;color:#fff}
 .kpi-val.gold{color:var(--gold)}
-.kpi-sub{font-size:11px;color:var(--gold);margin-top:6px;font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:400;letter-spacing:.5px;opacity:.85}
+.kpi-sub{font-size:13px;color:var(--libre);margin-top:6px;font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:400;letter-spacing:.5px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .blk{background:var(--card);border:1px solid var(--border);padding:22px}
 .blk-title{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;font-style:italic;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:16px}
