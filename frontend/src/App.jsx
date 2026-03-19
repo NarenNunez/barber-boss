@@ -359,7 +359,7 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .cita-svc{font-size:12px;color:var(--muted)}
 .cita-btns{display:flex;gap:7px;margin-left:auto}
 
-.monitor{min-height:100vh;background:#000;padding-top:60px;display:flex;flex-direction:column}
+.monitor{min-height:100vh;background:#000;padding-top:0;display:flex;flex-direction:column}
 .mon-head{
   background:rgba(0,0,0,.95);border-bottom:1px solid rgba(212,175,55,.2);
   padding:14px 32px;display:flex;align-items:center;justify-content:space-between;
