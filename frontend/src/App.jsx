@@ -288,7 +288,6 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
 .kpi-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-family:'DM Sans',sans-serif}
 .kpi-val{font-family:'Playfair Display',serif;font-size:36px;font-weight:700;font-style:italic;line-height:1;color:#fff}
 .kpi-val.gold{color:var(--gold)}
-.kpi-sub{font-size:12px;color:var(--libre);margin-top:4px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .blk{background:var(--card);border:1px solid var(--border);padding:22px}
 .blk-title{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;font-style:italic;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:16px}
@@ -841,7 +840,7 @@ function Reservas({ initData = {}, barberos, servicios }) {
             <div className="ftitle">Confirmar Reserva</div>
             <div className="fsub">Revisa los detalles antes de confirmar</div>
             <div style={{ background: "rgba(255,255,255,.02)", border: "1px solid var(--border)", padding: 20, marginBottom: 24 }}>
-              {[["Cliente", form.nombre], ["Teléfono", form.telefono], ["Barbero", form.barbero?.nombre], ["Servicio", form.servicio?.nombre], ["Fecha", form.fecha], ["Hora", form.hora], ["Método pago", abonoMetodo.charAt(0).toUpperCase() + abonoMetodo.slice(1)], ["Comprobante", comprobante]].map(([l, v]) => (
+              {[["Cliente", form.nombre], ["Teléfono", form.telefono], ["Barbero", form.barbero?.nombre], ["Servicio", form.servicio?.nombre], ["Fecha", form.fecha], ["Hora", form.hora], ["Método pago", abonoMetodo.charAt(0).toUpperCase() + abonoMetodo.slice(1)], ["Comprobante", comprobante?.name || comprobante]].map(([l, v]) => (
                 <div className="conf-row" key={l}>
                   <span className="conf-lbl">{l}</span>
                   <span style={{ fontWeight: 600, fontSize: 14 }}>{v}</span>
@@ -853,34 +852,34 @@ function Reservas({ initData = {}, barberos, servicios }) {
             </div>
             <div className="nav-btns">
               <button className="btn-back" onClick={() => setStep(6)}>← Atrás</button>
+              {/* ✅ FIX 1: supabase.storage (no supabase.from) para subir el comprobante */}
               <button className="btn-next" onClick={async () => {
                 try {
                   let comprobante_url = null;
                   if (comprobante && comprobante instanceof File) {
-                  const ext = comprobante.name.split('.').pop();
-                   const path = `comprobantes/${Date.now()}.${ext}`;
-                     const { error: uploadError } = await supabase
+                    const ext = comprobante.name.split('.').pop();
+                    const path = `comprobantes/${Date.now()}.${ext}`;
+                    const { error: uploadError } = await supabase.storage
                       .from('comprobantes')
-                     .upload(path, comprobante, { upsert: true });
-                      if (!uploadError) {
-                    const { data: urlData } = supabase.storage
-                     .from('comprobantes')
-                     .getPublicUrl(path);
-                       comprobante_url = urlData.publicUrl;
-                      }
-                      }
-
-                       await api.crearReserva({
-                         cliente_nombre:   form.nombre,
-                         cliente_telefono: form.telefono,
-                         cliente_email:    form.email,
-                        barbero_id:       form.barbero?.id,
-                         servicio_id:      form.servicio?.id,
-                           fecha_iso:        form.fechaISO,
-                        hora_inicio:      form.hora24,
-                        notas:            `Abono vía ${abonoMetodo}`,
-                         comprobante_url,
-                        });
+                      .upload(path, comprobante, { upsert: true });
+                    if (!uploadError) {
+                      const { data: urlData } = supabase.storage
+                        .from('comprobantes')
+                        .getPublicUrl(path);
+                      comprobante_url = urlData.publicUrl;
+                    }
+                  }
+                  await api.crearReserva({
+                    cliente_nombre:   form.nombre,
+                    cliente_telefono: form.telefono,
+                    cliente_email:    form.email,
+                    barbero_id:       form.barbero?.id,
+                    servicio_id:      form.servicio?.id,
+                    fecha_iso:        form.fechaISO,
+                    hora_inicio:      form.hora24,
+                    notas:            `Abono vía ${abonoMetodo}`,
+                    comprobante_url,
+                  });
                   setStep(8);
                 } catch (err) {
                   console.error('Error al crear reserva:', err);
@@ -922,9 +921,10 @@ function EditBarberoForm({ barbero, onClose, onSaved }) {
     if (fotoFile) {
       const ext = fotoFile.name.split('.').pop();
       const path = `barbero-${barbero.id}.${ext}`;
+      // ✅ FIX 2: bucket correcto (fotos-barberos) y variable correcta (fotoFile)
       const { error: uploadError } = await supabase.storage
-    .from('comprobantes')
-    .upload(path, comprobante, { upsert: true });
+        .from('fotos-barberos')
+        .upload(path, fotoFile, { upsert: true });
       if (!uploadError) {
         const { data } = supabase.storage.from('fotos-barberos').getPublicUrl(path);
         foto_url = data.publicUrl;
@@ -1303,7 +1303,7 @@ function SuperAdmin({ barberos, servicios }) {
     return unsub;
   }, [fechaFiltro]);
   const [abonoModal, setAbonoModal] = useState(null);
-  const PIN_ADMIN = "0000"; // ← Cambia este PIN por el que quieras
+  const PIN_ADMIN = "0000";
 
   const verificarPinAdmin = (digito) => {
     const nuevo = pinAdmin + digito;
@@ -1361,7 +1361,7 @@ function SuperAdmin({ barberos, servicios }) {
     { id: "tienda", icon: "🛍️", label: "Tienda" },
   ];
 
-const aprobAbono = async id => {
+  const aprobAbono = async id => {
     await api.actualizarAbono(id, 'aprobado');
     setReservas(p => p.map(r => r.id === id ? { ...r, abono_estado: "aprobado" } : r));
   };
@@ -1503,7 +1503,6 @@ const aprobAbono = async id => {
               </thead>
               <tbody>
                 {reservas.map(r => {
-                  
                   return (
                     <tr key={r.id}>
                       <td><div style={{ fontWeight: 600 }}>{r.cliente_nombre}</div><div style={{ fontSize: 11, color: "var(--muted)" }}>📱 {r.cliente_tel}</div></td>
@@ -1552,7 +1551,6 @@ const aprobAbono = async id => {
               <thead><tr><th>Hora</th><th>Cliente</th><th>Barbero</th><th>Servicio</th><th>Abono</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody>
                 {reservas.map(r => {
-                  
                   return (
                     <tr key={r.id}>
                       <td style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", color: "var(--gold)" }}>{r.hora_inicio?.slice(0,5)}</td>
@@ -1724,30 +1722,31 @@ const aprobAbono = async id => {
             <button className="modal-close" onClick={() => setAbonoModal(null)}>✕</button>
             <div className="modal-title">Comprobante de Abono</div>
             <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-                      <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 3 }}>Cliente</div>
-                  <div style={{ fontWeight: 600 }}>{abonoModal.cliente_nombre}</div>
-                 <div style={{ fontSize: 11, color: "var(--muted)" }}>📱 {abonoModal.cliente_tel}</div>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 10, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 3 }}>Servicio</div>
-                   <div style={{ fontWeight: 600 }}>{abonoModal.servicio?.nombre}</div>
-                  </div>
-                     </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 3 }}>Cliente</div>
+                <div style={{ fontWeight: 600 }}>{abonoModal.cliente_nombre}</div>
+                <div style={{ fontSize: 11, color: "var(--muted)" }}>📱 {abonoModal.cliente_tel}</div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 3 }}>Servicio</div>
+                <div style={{ fontWeight: 600 }}>{abonoModal.servicio?.nombre}</div>
+              </div>
+            </div>
+            {/* ✅ FIX 3 aplicado arriba en modal: imagen real del comprobante */}
             <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid var(--border)", padding: 12, textAlign: "center", marginBottom: 20 }}>
-               {abonoModal.comprobante_url ? (
-                       <img
-                     src={abonoModal.comprobante_url}
-                         alt="Comprobante"
-                      style={{ maxWidth: "100%", maxHeight: 400, objectFit: "contain", borderRadius: 2 }}
-                        />
-                     ) : (
-                         <div style={{ fontSize: 13, color: "var(--muted)", fontStyle: "italic", padding: 28 }}>
-                      <div style={{ fontSize: 32, marginBottom: 8 }}>📄</div>
-                        Sin comprobante adjunto
-                        </div>
-                       )}
-                       </div>
+              {abonoModal.comprobante_url ? (
+                <img
+                  src={abonoModal.comprobante_url}
+                  alt="Comprobante"
+                  style={{ maxWidth: "100%", maxHeight: 400, objectFit: "contain", borderRadius: 2 }}
+                />
+              ) : (
+                <div style={{ fontSize: 13, color: "var(--muted)", fontStyle: "italic", padding: 28 }}>
+                  <div style={{ fontSize: 32, marginBottom: 8 }}>📄</div>
+                  Sin comprobante adjunto
+                </div>
+              )}
+            </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button className="act-btn s" style={{ flex: 1, padding: "12px 0", fontSize: 12 }} onClick={() => { aprobAbono(abonoModal.id); setAbonoModal(null); }}>✓ Aprobar Abono</button>
               <button className="act-btn d" style={{ flex: 1, padding: "12px 0", fontSize: 12 }} onClick={() => { rechAbono(abonoModal.id); setAbonoModal(null); }}>✗ Rechazar</button>
@@ -1756,14 +1755,14 @@ const aprobAbono = async id => {
         </div>
       )}
       {editModal && (
-  <div className="overlay fade" onClick={e => e.target === e.currentTarget && setEditModal(null)}>
-    <div className="modal">
-      <button className="modal-close" onClick={() => setEditModal(null)}>✕</button>
-      <div className="modal-title">Editar Barbero</div>
-      <EditBarberoForm barbero={editModal} onClose={() => setEditModal(null)} onSaved={() => { setEditModal(null); window.location.reload(); }} />
-    </div>
-  </div>
-)}
+        <div className="overlay fade" onClick={e => e.target === e.currentTarget && setEditModal(null)}>
+          <div className="modal">
+            <button className="modal-close" onClick={() => setEditModal(null)}>✕</button>
+            <div className="modal-title">Editar Barbero</div>
+            <EditBarberoForm barbero={editModal} onClose={() => setEditModal(null)} onSaved={() => { setEditModal(null); window.location.reload(); }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1975,8 +1974,9 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
           {misCitas.map(r => (
             <div key={r.id} className="cita-card">
               <div>
-                <div className="cita-hora">{r.hora.split(" ")[0]}</div>
-                <div className="cita-hora-ampm">{r.hora.split(" ")[1]}</div>
+                {/* ✅ FIX 3: era r.hora.split(" ")[0] — ahora usa hora_inicio */}
+                <div className="cita-hora">{r.hora_inicio?.slice(0,5)}</div>
+                <div className="cita-hora-ampm"></div>
               </div>
               <div style={{ flex: 1 }}>
                 <div className="cita-nombre">{r.cliente_nombre}</div>
