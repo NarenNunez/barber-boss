@@ -1303,9 +1303,42 @@ function SuperAdmin({ barberos, servicios }) {
   const [toasts, setToasts] = useState([]);
   const reservasRef = React.useRef([]);
 
+  const [horaActual, setHoraActual] = useState(new Date());
+  useEffect(() => {
+    const t = setInterval(() => setHoraActual(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Sonido de notificación con Web Audio API
+  const playNotifSound = (tipo = "info") => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      if (tipo === "nueva") {
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2);
+      } else if (tipo === "abono") {
+        osc.frequency.setValueAtTime(660, ctx.currentTime);
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
+      } else {
+        osc.frequency.setValueAtTime(660, ctx.currentTime);
+      }
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.4);
+    } catch(e) {}
+  };
+
   const addToast = (msg, tipo = "info") => {
     const id = Date.now();
     setToasts(p => [...p, { id, msg, tipo }]);
+    playNotifSound(tipo);
     setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 5000);
   };
 
@@ -1520,52 +1553,128 @@ function SuperAdmin({ barberos, servicios }) {
         {tab === "tienda" && <Tienda />}
 
         {tab === "dashboard" && <div className="fade">
-          <div className="pg-head">
-            <div className="pg-title">Dashboard</div>
-            <div className="pg-sub">{new Date().toLocaleDateString("es-CO", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
+          {/* HEADER con reloj en vivo */}
+          <div className="pg-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <div className="pg-title">Dashboard</div>
+              <div className="pg-sub">{new Date().toLocaleDateString("es-CO", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 32, fontWeight: 700, fontStyle: "italic", color: "#fff", lineHeight: 1 }}>
+                {horaActual.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: true })}
+              </div>
+              <div style={{ fontSize: 11, color: "var(--muted)", letterSpacing: 1, marginTop: 4 }}>Hora actual</div>
+            </div>
           </div>
-          {/* FIX: KPIs filtrados por hoy */}
+
           {(() => {
             const hoyStr = new Date().toISOString().split('T')[0];
             const reservasHoy = reservas.filter(r => r.fecha === hoyStr);
             const pendAbonoTotal = reservas.filter(r => r.abono_estado === "pendiente").length;
+            const enCursoAhora = reservasHoy.filter(r => r.estado === "en_curso");
             return (<>
+
+          {/* ALERTA ABONOS PENDIENTES */}
+          {pendAbonoTotal > 0 && (
+            <div onClick={() => setTab("abonos")} style={{
+              background: "rgba(245,158,11,.08)", border: "1px solid rgba(245,158,11,.35)",
+              padding: "14px 20px", marginBottom: 20, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              transition: "all .2s"
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(245,158,11,.14)"}
+            onMouseLeave={e => e.currentTarget.style.background = "rgba(245,158,11,.08)"}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--proximo)", animation: "py 1.5s infinite" }} />
+                <span style={{ fontSize: 13, color: "#F59E0B", fontWeight: 600 }}>
+                  {pendAbonoTotal} comprobante{pendAbonoTotal > 1 ? "s" : ""} esperando aprobación
+                </span>
+              </div>
+              <span style={{ fontSize: 11, color: "#F59E0B", letterSpacing: 1, textTransform: "uppercase" }}>Revisar →</span>
+            </div>
+          )}
+
+          {/* CITAS EN CURSO AHORA */}
+          {enCursoAhora.length > 0 && (
+            <div style={{ background: "rgba(16,185,129,.06)", border: "1px solid rgba(16,185,129,.25)", padding: "14px 20px", marginBottom: 20 }}>
+              <div style={{ fontSize: 10, color: "var(--libre)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10, fontFamily: "'DM Sans',sans-serif", fontWeight: 600 }}>
+                ● En atención ahora mismo
+              </div>
+              <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                {enCursoAhora.map(r => (
+                  <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: r.barbero?.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "#000" }}>{r.barbero?.nombre?.slice(0,2).toUpperCase()}</div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{r.cliente_nombre}</div>
+                      <div style={{ fontSize: 11, color: "var(--muted)" }}>{r.servicio?.nombre}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* KPIs */}
           <div className="kpi-grid">
             {[
-              { l: "Servicios Hoy", v: reservasHoy.length, sub: `${reservasHoy.filter(r => r.estado === 'completado').length} completados`, gold: false },
-              { l: "Citas Pendientes", v: reservasHoy.filter(r => r.estado === "pendiente").length, sub: "Para hoy", gold: false },
-              { l: "Abonos en Revisión", v: pendAbonoTotal, sub: pendAbonoTotal > 0 ? "⚠ Requieren acción" : "Todo al día", gold: true },
-              { l: "En Curso Ahora", v: reservasHoy.filter(r => r.estado === "en_curso").length, sub: "Barberos activos", gold: false },
+              { l: "Servicios Hoy", v: reservasHoy.length, sub: `${reservasHoy.filter(r => r.estado === 'completado').length} completados` },
+              { l: "Citas Pendientes", v: reservasHoy.filter(r => r.estado === "pendiente").length, sub: "Para hoy" },
+              { l: "Abonos en Revisión", v: pendAbonoTotal, sub: pendAbonoTotal > 0 ? "Requieren acción" : "Todo al día", gold: true },
+              { l: "En Curso Ahora", v: enCursoAhora.length, sub: "Barberos activos" },
             ].map(k => (
-              <div key={k.l} className="kpi">
+              <div key={k.l} className="kpi" style={{ position: "relative", overflow: "hidden" }}>
+                {k.v === 0 && <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(255,255,255,.01) 10px,rgba(255,255,255,.01) 11px)" }} />}
                 <div className="kpi-lbl">{k.l}</div>
-                <div className={`kpi-val ${k.gold ? "gold" : ""}`}>{k.v}</div>
-                <div className="kpi-sub">{k.sub}</div>
+                <div className={`kpi-val ${k.gold ? "gold" : ""}`} style={{ color: k.v === 0 ? "rgba(255,255,255,.2)" : k.gold ? "var(--gold)" : "#fff" }}>{k.v}</div>
+                <div className="kpi-sub" style={{ color: k.v === 0 ? "var(--muted)" : k.gold && k.v > 0 ? "#F59E0B" : "var(--libre)" }}>{k.sub}</div>
               </div>
             ))}
           </div>
+
+          {/* ACCESOS RÁPIDOS */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 10, marginBottom: 20 }}>
+            {[
+              { label: "Nueva Cita", icon: "＋", action: () => setNuevaCitaModal(true), color: "var(--gold)", bg: "rgba(212,175,55,.08)", border: "rgba(212,175,55,.25)" },
+              { label: "Ver Abonos", icon: "💳", action: () => setTab("abonos"), color: "#F59E0B", bg: "rgba(245,158,11,.06)", border: "rgba(245,158,11,.2)", badge: pendAbonoTotal },
+              { label: "Todas las Citas", icon: "📋", action: () => setTab("reservas"), color: "#3B82F6", bg: "rgba(59,130,246,.06)", border: "rgba(59,130,246,.2)" },
+              { label: "Ver Reportes", icon: "📊", action: () => setTab("reportes"), color: "var(--libre)", bg: "rgba(16,185,129,.06)", border: "rgba(16,185,129,.2)" },
+            ].map(a => (
+              <button key={a.label} onClick={a.action} style={{
+                background: a.bg, border: `1px solid ${a.border}`, padding: "12px 16px",
+                cursor: "pointer", textAlign: "left", transition: "all .2s", position: "relative"
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
+                <div style={{ fontSize: 18, marginBottom: 6 }}>{a.icon}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: a.color, fontFamily: "'DM Sans',sans-serif", letterSpacing: .5 }}>{a.label}</div>
+                {a.badge > 0 && <div style={{ position: "absolute", top: 8, right: 8, background: "#F59E0B", color: "#000", borderRadius: "50%", width: 18, height: 18, fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{a.badge}</div>}
+              </button>
+            ))}
+          </div>
+
           <div className="g2">
             <div className="blk">
               <div className="blk-title">Citas de Hoy</div>
-              {reservasHoy.slice(0, 5).map(r => {
-                return (
+              {reservasHoy.length === 0
+                ? <div style={{ textAlign: "center", padding: "32px 0", fontFamily: "'Cormorant Garamond',serif", fontSize: 16, fontStyle: "italic", color: "var(--muted)" }}>Sin citas programadas para hoy</div>
+                : reservasHoy.slice(0, 5).map(r => (
                   <div key={r.id} className="row">
                     <div className="dot" style={{ background: r.barbero?.color }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: 13 }}>{r.cliente_nombre}</div>
-                      <div style={{ fontSize: 11, color: "var(--muted)" }}>{r.servicio?.nombre} · {r.barbero?.nombre.split(" ")[0]}</div>
+                      <div style={{ fontSize: 11, color: "var(--muted)" }}>{r.servicio?.nombre} · {r.barbero?.nombre?.split(" ")[0]}</div>
                     </div>
                     <div style={{ fontSize: 12, color: "#9CA3AF", marginRight: 8 }}>{r.hora_inicio?.slice(0,5)}</div>
                     <span className={`badge ${r.estado}`}>{r.estado.replace("_", " ")}</span>
                   </div>
-                );
-              })}
+                ))
+              }
             </div>
             <div className="blk">
               <div className="blk-title">Rendimiento Barberos</div>
               {barberos.map(b => {
-                const completados = reservas.filter(r => r.barbero?.id === b.id && r.estado === 'completado').length;
-                const total = reservas.filter(r => r.barbero?.id === b.id).length;
+                const completados = reservasHoy.filter(r => r.barbero?.id === b.id && r.estado === 'completado').length;
+                const total = reservasHoy.filter(r => r.barbero?.id === b.id).length;
                 const pct = total > 0 ? Math.round((completados / total) * 100) : 0;
                 return (
                   <div key={b.id} className="row">
@@ -1573,10 +1682,13 @@ function SuperAdmin({ barberos, servicios }) {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
                         <span style={{ fontSize: 13, fontWeight: 600 }}>{b.nombre.split(" ")[0]}</span>
-                        <span style={{ fontSize: 12, color: "var(--gold)" }}>{completados} completados</span>
+                        {total === 0
+                          ? <span style={{ fontSize: 11, color: "var(--muted)", fontStyle: "italic" }}>Sin citas hoy</span>
+                          : <span style={{ fontSize: 12, color: "var(--gold)" }}>{completados}/{total} completados</span>
+                        }
                       </div>
                       <div className="prog">
-                        <div className="prog-fill" style={{ width: `${pct}%`, background: b.color }} />
+                        <div className="prog-fill" style={{ width: `${pct}%`, background: pct === 0 ? "rgba(255,255,255,.08)" : b.color, transition: "width .5s ease" }} />
                       </div>
                     </div>
                   </div>
