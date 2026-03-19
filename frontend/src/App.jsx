@@ -648,7 +648,7 @@ function Home({ onNav }) {
         </div>
       </section>
 
-      <section style={{ background: "#000", borderTop: "1px solid rgba(255,255,255,.04)" }}>
+      <section id="servicios" style={{ background: "#000", borderTop: "1px solid rgba(255,255,255,.04)" }}>
         <div className="section">
           <div className="sec-head">
             <div className="sec-tag">Lo que ofrecemos</div>
@@ -660,7 +660,7 @@ function Home({ onNav }) {
               <div key={s.id} className="svc-item" onClick={() => onNav("reservas")}>
                 <div>
                   <div className="svc-name">{s.nombre}</div>
-                  <div className="svc-dur">{s.duracion} min</div>
+                  <div className="svc-dur">{s.duracion_min || s.duracion} min</div>
                 </div>
                 <div className="svc-price">{fmtCOP(s.precio)}</div>
               </div>
@@ -2886,7 +2886,7 @@ export default function App() {
         <nav className="nav">
           <div className="nav-logo" onClick={() => nav("home")}>Barber<span>Boss</span></div>
           <button className="nav-pill" onClick={() => document.getElementById("equipo")?.scrollIntoView({ behavior: "smooth" })}>Equipo</button>
-          <button className="nav-pill" onClick={() => document.getElementById("equipo")?.scrollIntoView({ behavior: "smooth" })}>Servicios</button>
+          <button className="nav-pill" onClick={() => document.getElementById("servicios")?.scrollIntoView({ behavior: "smooth" })}>Servicios</button>
           <button className="nav-cta" onClick={() => nav("reservas")}>Reservar</button>
         </nav>
       )}
