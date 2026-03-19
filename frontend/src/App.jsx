@@ -440,11 +440,48 @@ body{background:#000;color:var(--text);font-family:'DM Sans',sans-serif;overflow
   .hora-grid{grid-template-columns:repeat(3,1fr)}
   .bp-tabs{gap:4px}
   .bp-tab{padding:6px 12px;font-size:10px}
+  .mob-menu-btn{display:block !important}
+  .admin-main{padding:16px;padding-top:52px}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .pg-title{font-size:26px}
+  .tbl{font-size:11px}
+  .tbl th,.tbl td{padding:8px 6px}
+  .bp-header{flex-wrap:wrap;padding:14px 16px;gap:10px}
+  .bp-body{padding:16px}
+  .bp-name{font-size:18px}
+  .bp-tabs{order:3;width:100%;justify-content:center;margin-left:0}
 }
 @media(max-width:560px){
   .mon-grid{grid-template-columns:1fr}
   .hero-stats{gap:28px}
   .hero-title{font-size:72px}
+  /* Admin móvil */
+  .admin{flex-direction:column}
+  .admin-main{padding:12px}
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .kpi{padding:14px}
+  .kpi-val{font-size:26px}
+  .kpi-lbl{font-size:9px}
+  .g2{grid-template-columns:1fr;gap:10px}
+  .blk{padding:14px}
+  .pg-title{font-size:22px}
+  .pg-head{margin-bottom:16px}
+  /* Tablas en móvil: scroll horizontal */
+  .blk{overflow-x:auto}
+  .tbl{min-width:500px}
+  /* Panel barbero móvil */
+  .bp-header{padding:12px;gap:8px}
+  .bp-av{width:40px;height:40px;font-size:13px}
+  .bp-name{font-size:16px}
+  .bp-esp{font-size:11px}
+  .bp-body{padding:12px}
+  .bp-tabs{gap:2px}
+  .bp-tab{padding:7px 10px;font-size:10px;letter-spacing:0}
+  .cita-card{padding:12px;flex-wrap:wrap;gap:10px}
+  .cita-hora{font-size:22px;width:60px}
+  .cita-btns{width:100%;justify-content:flex-end}
+  /* KPI panel barbero */
+  .kpi-grid{gap:8px}
 }
 `;
 
@@ -1315,6 +1352,7 @@ function SuperAdmin({ barberos, servicios }) {
   const hoy = new Date().toISOString().split('T')[0];
   const [editModal, setEditModal] = useState(null);
   const [reagendarModal, setReagendarModal] = useState(null);
+  const [menuMobile, setMenuMobile] = useState(false);
   const [nuevaCitaModal, setNuevaCitaModal] = useState(false);
   const [nuevaCitaForm, setNuevaCitaForm] = useState({ nombre: "", telefono: "", barbero_id: "", servicio_id: "", fecha: new Date().toISOString().split('T')[0], hora: "" });
   const [nuevaCitaSaving, setNuevaCitaSaving] = useState(false);
@@ -1548,13 +1586,30 @@ function SuperAdmin({ barberos, servicios }) {
 
   return (
     <div className="admin">
-      <div className="sidebar">
-        <div style={{ padding: "16px 16px 0", marginBottom: 8 }}>
+      {/* Botón hamburguesa móvil */}
+      <button onClick={() => setMenuMobile(true)} style={{
+        display: "none", position: "fixed", top: 14, left: 14, zIndex: 600,
+        background: "var(--card)", border: "1px solid var(--border)", padding: "8px 10px",
+        cursor: "pointer", borderRadius: 2,
+      }} className="mob-menu-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2" strokeLinecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+
+      {/* Overlay móvil */}
+      {menuMobile && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", zIndex: 590 }} onClick={() => setMenuMobile(false)} />
+      )}
+
+      <div className="sidebar" style={menuMobile ? { display: "flex", flexDirection: "column", position: "fixed", top: 0, left: 0, height: "100vh", zIndex: 595, width: 220 } : {}}>
+        <div style={{ padding: "16px 16px 0", marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", color: "var(--gold)", letterSpacing: 1 }}>Admin</div>
+          <button onClick={() => setMenuMobile(false)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 18, display: menuMobile ? "block" : "none" }}>✕</button>
         </div>
         <div className="sb-label">Panel</div>
         {SB.map(s => (
-          <button key={s.id} className={`sb-item ${tab === s.id ? "act" : ""}`} onClick={() => setTab(s.id)}>
+          <button key={s.id} className={`sb-item ${tab === s.id ? "act" : ""}`} onClick={() => { setTab(s.id); setMenuMobile(false); }}>
             <span style={{ display: "flex", alignItems: "center", opacity: tab === s.id ? 1 : 0.6 }}>{SB_ICONS[s.id]}</span>
             {s.label}
           </button>
