@@ -1412,14 +1412,65 @@ function SuperAdmin({ barberos, servicios }) {
   const totalHoy = reservas.filter(r => r.estado === 'completado').length;
   const pendAbono = reservas.filter(r => r.abono_estado === "pendiente").length;
 
+  const SB_ICONS = {
+    dashboard: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+    ),
+    abonos: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+        <line x1="1" y1="10" x2="23" y2="10"/>
+      </svg>
+    ),
+    reservas: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    ),
+    barberos: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/>
+        <line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/>
+      </svg>
+    ),
+    calendario: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+        <line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/>
+        <line x1="16" y1="14" x2="16" y2="14"/>
+      </svg>
+    ),
+    reportes: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/>
+        <line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+    ),
+    tienda: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+    ),
+  };
+
   const SB = [
-    { id: "dashboard", icon: "◈", label: "Dashboard" },
-    { id: "abonos",    icon: "💳", label: `Abonos ${pendAbono > 0 ? `(${pendAbono})` : ""}` },
-    { id: "reservas",  icon: "📅", label: "Todas las Citas" },
-    { id: "barberos",  icon: "✂️", label: "Gestión Barberos" },
-    { id: "calendario",icon: "🗓", label: "Calendario" },
-    { id: "reportes",  icon: "📈", label: "Reportes" },
-    { id: "tienda", icon: "🛍️", label: "Tienda" },
+    { id: "dashboard", label: "Dashboard" },
+    { id: "abonos",    label: `Abonos${pendAbono > 0 ? ` (${pendAbono})` : ""}` },
+    { id: "reservas",  label: "Todas las Citas" },
+    { id: "barberos",  label: "Gestión Barberos" },
+    { id: "calendario",label: "Calendario" },
+    { id: "reportes",  label: "Reportes" },
+    { id: "tienda",    label: "Tienda" },
   ];
 
   const aprobAbono = async id => {
@@ -1452,7 +1503,8 @@ function SuperAdmin({ barberos, servicios }) {
         <div className="sb-label">Panel</div>
         {SB.map(s => (
           <button key={s.id} className={`sb-item ${tab === s.id ? "act" : ""}`} onClick={() => setTab(s.id)}>
-            <span>{s.icon}</span> {s.label}
+            <span style={{ display: "flex", alignItems: "center", opacity: tab === s.id ? 1 : 0.6 }}>{SB_ICONS[s.id]}</span>
+            {s.label}
           </button>
         ))}
         <div style={{ position:"absolute", bottom:20, left:0, right:0, padding:"0 16px" }}>
