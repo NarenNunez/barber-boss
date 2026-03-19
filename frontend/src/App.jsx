@@ -840,7 +840,7 @@ function Reservas({ initData = {}, barberos, servicios }) {
             <div className="ftitle">Confirmar Reserva</div>
             <div className="fsub">Revisa los detalles antes de confirmar</div>
             <div style={{ background: "rgba(255,255,255,.02)", border: "1px solid var(--border)", padding: 20, marginBottom: 24 }}>
-              {[["Cliente", form.nombre], ["Teléfono", form.telefono], ["Barbero", form.barbero?.nombre], ["Servicio", form.servicio?.nombre], ["Fecha", form.fecha], ["Hora", form.hora], ["Método pago", abonoMetodo.charAt(0).toUpperCase() + abonoMetodo.slice(1)], ["Comprobante", comprobante?.name || comprobante]].map(([l, v]) => (
+              {[["Cliente", form.nombre], ["Teléfono", form.telefono], ["Barbero", form.barbero?.nombre], ["Servicio", form.servicio?.nombre], ["Fecha", form.fecha], ["Hora", form.hora], ["Método pago", abonoMetodo.charAt(0).toUpperCase() + abonoMetodo.slice(1)], ["Comprobante", comprobante?.name || "Sin archivo"]].map(([l, v]) => (
                 <div className="conf-row" key={l}>
                   <span className="conf-lbl">{l}</span>
                   <span style={{ fontWeight: 600, fontSize: 14 }}>{v}</span>
