@@ -840,7 +840,7 @@ function Reservas({ initData = {}, barberos, servicios }) {
             <div className="ftitle">Confirmar Reserva</div>
             <div className="fsub">Revisa los detalles antes de confirmar</div>
             <div style={{ background: "rgba(255,255,255,.02)", border: "1px solid var(--border)", padding: 20, marginBottom: 24 }}>
-              {[["Cliente", form.nombre], ["Teléfono", form.telefono], ["Barbero", form.barbero?.nombre], ["Servicio", form.servicio?.nombre], ["Fecha", form.fecha], ["Hora", form.hora], ["Método pago", abonoMetodo.charAt(0).toUpperCase() + abonoMetodo.slice(1)], ["Comprobante", comprobante?.name || "Sin archivo"]].map(([l, v]) => (
+              {[["Cliente", form.nombre], ["Teléfono", form.telefono], ["Barbero", form.barbero?.nombre], ["Servicio", form.servicio?.nombre], ["Fecha", form.fecha], ["Hora", form.hora], ["Método pago", abonoMetodo.charAt(0).toUpperCase() + abonoMetodo.slice(1)], ["Comprobante", comprobante?.name || comprobante]].map(([l, v]) => (
                 <div className="conf-row" key={l}>
                   <span className="conf-lbl">{l}</span>
                   <span style={{ fontWeight: 600, fontSize: 14 }}>{v}</span>
@@ -1410,12 +1410,18 @@ function SuperAdmin({ barberos, servicios }) {
             <div className="pg-title">Dashboard</div>
             <div className="pg-sub">{new Date().toLocaleDateString("es-CO", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
           </div>
+          {/* FIX: KPIs filtrados por hoy */}
+          {(() => {
+            const hoyStr = new Date().toISOString().split('T')[0];
+            const reservasHoy = reservas.filter(r => r.fecha === hoyStr);
+            const pendAbonoTotal = reservas.filter(r => r.abono_estado === "pendiente").length;
+            return (<>
           <div className="kpi-grid">
             {[
-              { l: "Servicios Hoy", v: reservas.length, sub: `${reservas.filter(r => r.estado === 'completado').length} completados`, gold: false },
-              { l: "Citas Pendientes", v: reservas.filter(r => r.estado === "pendiente").length, sub: "Para hoy", gold: false },
-              { l: "Abonos en Revisión", v: pendAbono, sub: pendAbono > 0 ? "⚠ Requieren acción" : "Todo al día", gold: true },
-              { l: "En Curso Ahora", v: reservas.filter(r => r.estado === "en_curso").length, sub: "Barberos activos", gold: false },
+              { l: "Servicios Hoy", v: reservasHoy.length, sub: `${reservasHoy.filter(r => r.estado === 'completado').length} completados`, gold: false },
+              { l: "Citas Pendientes", v: reservasHoy.filter(r => r.estado === "pendiente").length, sub: "Para hoy", gold: false },
+              { l: "Abonos en Revisión", v: pendAbonoTotal, sub: pendAbonoTotal > 0 ? "⚠ Requieren acción" : "Todo al día", gold: true },
+              { l: "En Curso Ahora", v: reservasHoy.filter(r => r.estado === "en_curso").length, sub: "Barberos activos", gold: false },
             ].map(k => (
               <div key={k.l} className="kpi">
                 <div className="kpi-lbl">{k.l}</div>
@@ -1427,7 +1433,7 @@ function SuperAdmin({ barberos, servicios }) {
           <div className="g2">
             <div className="blk">
               <div className="blk-title">Citas de Hoy</div>
-              {reservas.slice(0, 5).map(r => {
+              {reservasHoy.slice(0, 5).map(r => {
                 return (
                   <div key={r.id} className="row">
                     <div className="dot" style={{ background: r.barbero?.color }} />
@@ -1464,24 +1470,33 @@ function SuperAdmin({ barberos, servicios }) {
               })}
             </div>
           </div>
+          </>); })()}
+          {/* FIX: Estado en tiempo real calculado desde reservas reales */}
           <div className="blk">
             <div className="blk-title">Estado en Tiempo Real</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 12 }}>
-              {barberos.map(b => (
+              {barberos.map(b => {
+                const hoyStr = new Date().toISOString().split('T')[0];
+                const enCurso = reservas.some(r => r.barbero?.id === b.id && r.estado === 'en_curso' && r.fecha === hoyStr);
+                const tienePendiente = reservas.some(r => r.barbero?.id === b.id && r.estado === 'pendiente' && r.fecha === hoyStr);
+                const estadoReal = enCurso ? 'ocupado' : tienePendiente ? 'proximo' : 'libre';
+                const colaReal = reservas.filter(r => r.barbero?.id === b.id && r.estado === 'pendiente' && r.fecha === hoyStr).length;
+                return (
                 <div key={b.id} style={{ background: "rgba(255,255,255,.02)", border: "1px solid var(--border)", padding: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                    <div className="av-sm" style={{ background: b.color }}>{b.iniciales}</div>
+                    <div className="av-sm" style={{ background: b.color }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 13 }}>{b.nombre.split(" ")[0]}</div>
                       <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                        <div className="dot" style={{ background: b.estado === "libre" ? "var(--libre)" : b.estado === "ocupado" ? "var(--ocupado)" : "var(--proximo)" }} />
-                        <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 1, color: b.estado === "libre" ? "var(--libre)" : b.estado === "ocupado" ? "var(--ocupado)" : "var(--proximo)" }}>{b.estado}</span>
+                        <div className="dot" style={{ background: estadoReal === "libre" ? "var(--libre)" : estadoReal === "ocupado" ? "var(--ocupado)" : "var(--proximo)" }} />
+                        <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 1, color: estadoReal === "libre" ? "var(--libre)" : estadoReal === "ocupado" ? "var(--ocupado)" : "var(--proximo)" }}>{estadoReal}</span>
                       </div>
                     </div>
                   </div>
-                  <div style={{ fontSize: 12, color: "var(--muted)" }}>Cola: <strong style={{ color: "var(--gold)" }}>{b.cola}</strong></div>
+                  <div style={{ fontSize: 12, color: "var(--muted)" }}>Cola: <strong style={{ color: "var(--gold)" }}>{colaReal}</strong></div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>}
@@ -1637,19 +1652,29 @@ function SuperAdmin({ barberos, servicios }) {
                   </tr>
                 </thead>
                 <tbody>
+                  {/* FIX: Calendario usa hora_inicio y barbero?.id correctos */}
                   {HORAS_DISP.slice(0, 10).map(h => {
-                    const citasH = reservas.filter(r => r.hora === h);
+                    const h24 = (() => {
+                      const [time, ampm] = h.split(' ');
+                      let [hh, mm] = time.split(':');
+                      hh = parseInt(hh);
+                      if (ampm === 'PM' && hh !== 12) hh += 12;
+                      if (ampm === 'AM' && hh === 12) hh = 0;
+                      return `${String(hh).padStart(2,'0')}:${mm}`;
+                    })();
+                    const hoyStr = new Date().toISOString().split('T')[0];
+                    const citasH = reservas.filter(r => r.hora_inicio?.slice(0,5) === h24 && r.fecha === hoyStr);
                     return (
                       <tr key={h} style={{ borderTop: "1px solid rgba(255,255,255,.04)" }}>
                         <td style={{ padding: "8px 12px", fontFamily: "'Playfair Display',serif", fontSize: 16, fontStyle: "italic", color: "var(--muted)" }}>{h}</td>
                         {barberos.map(b => {
-                          const c = citasH.find(x => x.barberoId === b.id);
+                          const c = citasH.find(x => x.barbero?.id === b.id);
                           return (
                             <td key={b.id} style={{ padding: "5px 7px" }}>
                               {c ? (
                                 <div style={{ background: `${b.color}18`, border: `1px solid ${b.color}35`, padding: "6px 10px", fontSize: 12 }}>
-                                  <div style={{ fontWeight: 600, color: b.color }}>{c.cliente}</div>
-                                  <div style={{ color: "var(--muted)", fontSize: 11 }}>{c.servicio}</div>
+                                  <div style={{ fontWeight: 600, color: b.color }}>{c.cliente_nombre}</div>
+                                  <div style={{ color: "var(--muted)", fontSize: 11 }}>{c.servicio?.nombre}</div>
                                 </div>
                               ) : (
                                 <div style={{ height: 32, border: "1px dashed rgba(255,255,255,.05)" }} />
@@ -1668,18 +1693,25 @@ function SuperAdmin({ barberos, servicios }) {
 
         {tab === "reportes" && <div className="fade">
           <div className="pg-head"><div className="pg-title">Reportes</div><div className="pg-sub">Estadísticas del negocio</div></div>
+          {/* FIX: KPIs de reportes filtrados por hoy */}
+          {(() => {
+            const hoyRep = new Date().toISOString().split('T')[0];
+            const resHoy = reservas.filter(r => r.fecha === hoyRep);
+            return (
           <div className="kpi-grid">
-            {[["Servicios Hoy", reservas.filter(r => r.estado === 'completado').length, "Completados hoy"], ["Citas Totales", reservas.length, "Registradas hoy"], ["Abonos Pendientes", reservas.filter(r => r.abono_estado === 'pendiente').length, "Por revisar"], ["En Curso", reservas.filter(r => r.estado === 'en_curso').length, "Ahora mismo"]].map(([l, v, s]) => (
+            {[["Servicios Hoy", resHoy.filter(r => r.estado === 'completado').length, "Completados hoy"], ["Citas Totales", resHoy.length, "Registradas hoy"], ["Abonos Pendientes", reservas.filter(r => r.abono_estado === 'pendiente').length, "Por revisar"], ["En Curso", resHoy.filter(r => r.estado === 'en_curso').length, "Ahora mismo"]].map(([l, v, s]) => (
               <div key={l} className="kpi"><div className="kpi-lbl">{l}</div><div className="kpi-val gold" style={{ fontSize: 28 }}>{v}</div><div className="kpi-sub">{s}</div></div>
             ))}
           </div>
+          ); })()}
           <GananciasAdmin barberos={barberos} />
           <div className="g2">
             <div className="blk">
               <div className="blk-title">Ranking Barberos (Hoy)</div>
+              {/* FIX: Ranking usa fecha de hoy */}
               {[...barberos].map(b => ({
                 ...b,
-                completadosHoy: reservas.filter(r => r.barbero?.id === b.id && r.estado === 'completado').length
+                completadosHoy: reservas.filter(r => r.barbero?.id === b.id && r.estado === 'completado' && r.fecha === new Date().toISOString().split('T')[0]).length
               })).sort((a, b) => b.completadosHoy - a.completadosHoy).map((b, i) => (
                 <div key={b.id} className="row">
                   <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: i === 0 ? "var(--gold)" : "var(--muted)", width: 28 }}>#{i + 1}</div>
@@ -1696,6 +1728,7 @@ function SuperAdmin({ barberos, servicios }) {
             </div>
             <div className="blk">
               <div className="blk-title">Por Servicio</div>
+              {/* FIX: Por servicio usa semana completa */}
               {servicios.map(s => {
                 const count = reservas.filter(r => r.servicio?.id === s.id && r.estado === 'completado').length;
                 const maxCount = Math.max(...servicios.map(x => reservas.filter(r => r.servicio?.id === x.id && r.estado === 'completado').length), 1);
