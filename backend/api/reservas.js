@@ -10,7 +10,6 @@ import { logger } from '../lib/logger.js';
 const router = Router();
 
 // ── GET /api/reservas/disponibilidad ─────────────────────────
-// Retorna los slots disponibles de un barbero en una fecha
 router.get('/disponibilidad', disponibilidadQuery, validate, async (req, res) => {
   try {
     const { barbero_id, fecha, duracion = 30 } = req.query;
@@ -30,7 +29,6 @@ router.get('/disponibilidad', disponibilidadQuery, validate, async (req, res) =>
 });
 
 // ── GET /api/reservas ─────────────────────────────────────────
-// Lista reservas (admin: todas; barbero: solo las suyas)
 router.get('/', requireAuth, async (req, res) => {
   try {
     const { fecha, barbero_id, estado, page = 1, limit = 50 } = req.query;
@@ -50,7 +48,6 @@ router.get('/', requireAuth, async (req, res) => {
       .order('hora_inicio', { ascending: true })
       .range(offset, offset + parseInt(limit) - 1);
 
-    // Barbero solo ve sus propias citas
     if (req.user.rol === 'barbero') {
       q = q.eq('barbero_id', req.user.barbero_id);
     } else if (barbero_id) {
@@ -92,15 +89,14 @@ router.get('/:id', requireAuth, uuidParam('id'), validate, async (req, res) => {
 });
 
 // ── POST /api/reservas ────────────────────────────────────────
-// Crear reserva (público — clientes)
 router.post('/', reservaRules, validate, async (req, res) => {
   try {
     const {
       cliente_nombre, cliente_tel, cliente_email,
       barbero_id, servicio_id, fecha, hora_inicio, notas,
+      comprobante_url, // ✅ FIX: recibir comprobante_url del frontend
     } = req.body;
 
-    // Calcular hora_fin según duración del servicio
     const { data: servicio, error: svcErr } = await supabaseAdmin
       .from('servicios')
       .select('duracion_min, nombre, precio')
@@ -114,7 +110,6 @@ router.post('/', reservaRules, validate, async (req, res) => {
     const fin    = addMinutes(inicio, servicio.duracion_min);
     const hora_fin = format(fin, 'HH:mm');
 
-    // Verificar disponibilidad
     const { data: conflicto } = await supabaseAdmin
       .from('reservas')
       .select('id')
@@ -141,7 +136,9 @@ router.post('/', reservaRules, validate, async (req, res) => {
         hora_fin,
         notas: notas?.trim() || null,
         estado: 'pendiente',
-        abono_estado: 'sin_abono',
+        // ✅ FIX: si viene con comprobante marcar pendiente, si no sin_abono
+        abono_estado:    comprobante_url ? 'pendiente' : 'sin_abono',
+        comprobante_url: comprobante_url || null,
       })
       .select(`
         id, cliente_nombre, fecha, hora_inicio,
@@ -151,7 +148,6 @@ router.post('/', reservaRules, validate, async (req, res) => {
       .single();
 
     if (error) {
-      // Exclusion constraint = conflicto de horario
       if (error.code === '23P01')
         return res.status(409).json({ error: 'Horario no disponible' });
       throw error;
@@ -166,7 +162,6 @@ router.post('/', reservaRules, validate, async (req, res) => {
 });
 
 // ── PATCH /api/reservas/:id/estado ───────────────────────────
-// Cambiar estado (auth)
 router.patch('/:id/estado', requireAuth, uuidParam('id'), validate, async (req, res) => {
   try {
     const { estado } = req.body;
@@ -191,7 +186,6 @@ router.patch('/:id/estado', requireAuth, uuidParam('id'), validate, async (req, 
 });
 
 // ── POST /api/reservas/abono ──────────────────────────────────
-// Cliente sube comprobante de abono
 router.post('/abono', uploadComprobante.single('comprobante'), abonoRules, validate, async (req, res) => {
   try {
     const { reserva_id, metodo, monto } = req.body;
@@ -200,7 +194,6 @@ router.post('/abono', uploadComprobante.single('comprobante'), abonoRules, valid
     if (!file)
       return res.status(400).json({ error: 'Comprobante requerido' });
 
-    // Validar que la reserva existe y no tiene abono aún
     const { data: reserva, error: rErr } = await supabaseAdmin
       .from('reservas')
       .select('id, abono_estado, cliente_nombre')
@@ -213,7 +206,6 @@ router.post('/abono', uploadComprobante.single('comprobante'), abonoRules, valid
     if (reserva.abono_estado === 'aprobado')
       return res.status(409).json({ error: 'Esta reserva ya tiene abono aprobado' });
 
-    // Subir a Supabase Storage
     const ext = file.originalname.split('.').pop();
     const storagePath = `comprobantes/${reserva_id}/${Date.now()}.${ext}`;
 
@@ -224,7 +216,6 @@ router.post('/abono', uploadComprobante.single('comprobante'), abonoRules, valid
       file.mimetype,
     );
 
-    // Actualizar reserva
     const { data, error } = await supabaseAdmin
       .from('reservas')
       .update({
@@ -249,10 +240,9 @@ router.post('/abono', uploadComprobante.single('comprobante'), abonoRules, valid
 });
 
 // ── PATCH /api/reservas/:id/abono ────────────────────────────
-// Admin aprueba o rechaza abono
 router.patch('/:id/abono', requireAuth, requireAdmin, uuidParam('id'), validate, async (req, res) => {
   try {
-    const { accion } = req.body; // 'aprobar' | 'rechazar'
+    const { accion } = req.body;
     if (!['aprobar','rechazar'].includes(accion))
       return res.status(400).json({ error: "accion debe ser 'aprobar' o 'rechazar'" });
 
@@ -277,7 +267,6 @@ router.patch('/:id/abono', requireAuth, requireAdmin, uuidParam('id'), validate,
 // ── DELETE /api/reservas/:id ──────────────────────────────────
 router.delete('/:id', requireAuth, requireAdmin, uuidParam('id'), validate, async (req, res) => {
   try {
-    // Eliminar comprobante de Storage si existe
     const { data: r } = await supabaseAdmin
       .from('reservas')
       .select('comprobante_key')
