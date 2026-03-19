@@ -2173,12 +2173,14 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
 // ─────────────────────────────────────────────
 // MONITOR
 // ─────────────────────────────────────────────
-function Monitor({ barberos }) {
+function Monitor({ barberos, servicios }) {
   const [reservas, setReservas] = useState([]);
   const hoy = new Date().toISOString().split('T')[0];
   const [showWalk, setShowWalk] = useState(false);
   const [walkNombre, setWalkNombre] = useState("");
   const [walkBarbId, setWalkBarbId] = useState(null);
+  const [walkServId, setWalkServId] = useState(null);
+  const [walkSaving, setWalkSaving] = useState(false);
   const now = new Date();
 
   useEffect(() => {
@@ -2295,6 +2297,19 @@ function Monitor({ barberos }) {
               <input className="finput" placeholder="Nombre completo" value={walkNombre} onChange={e => setWalkNombre(e.target.value)} />
             </div>
             <div className="field">
+              <label className="flabel">Servicio</label>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {servicios.map(s => (
+                  <div key={s.id} className={`opt ${walkServId === s.id ? "sel" : ""}`}
+                    style={{ padding: "8px 12px", display: "flex", justifyContent: "space-between", textAlign: "left" }}
+                    onClick={() => setWalkServId(s.id)}>
+                    <span style={{ fontSize: 13 }}>{s.nombre}</span>
+                    <span style={{ fontSize: 13, color: "var(--gold)", fontFamily: "'Playfair Display',serif", fontStyle: "italic" }}>{fmtCOP(s.precio)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="field">
               <label className="flabel">Asignar a Barbero</label>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                 {barberos.map(b => {
@@ -2314,26 +2329,35 @@ function Monitor({ barberos }) {
                 })}
               </div>
             </div>
-            <button className="btn-gold" style={{ width: "100%", marginTop: 4 }} onClick={async () => {
-              if (!walkNombre.trim() || !walkBarbId) return;
-              try {
-                const hoyISO = new Date().toISOString().split('T')[0];
-                const ahora = new Date();
-                const horaActual = `${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
-                await api.crearReserva({
-                  cliente_nombre:   walkNombre.trim(),
-                  cliente_telefono: "0000000000",
-                  barbero_id:       walkBarbId,
-                  servicio_id:      null,
-                  fecha_iso:        hoyISO,
-                  hora_inicio:      horaActual,
-                  notas:            "Walk-In — sin reserva previa",
-                  comprobante_url:  null,
-                });
-              } catch(e) { console.error("Walk-in error:", e); }
-              setShowWalk(false); setWalkNombre(""); setWalkBarbId(null);
-            }}>
-              Agregar a Cola
+            <button className="btn-gold" style={{ width: "100%", marginTop: 4, opacity: (!walkNombre.trim() || !walkBarbId || !walkServId) ? 0.5 : 1 }}
+              disabled={!walkNombre.trim() || !walkBarbId || !walkServId || walkSaving}
+              onClick={async () => {
+                setWalkSaving(true);
+                try {
+                  const hoyISO = new Date().toISOString().split('T')[0];
+                  const ahora = new Date();
+                  const horaActual = `${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
+                  await api.crearReserva({
+                    cliente_nombre:   walkNombre.trim(),
+                    cliente_telefono: "0000000000",
+                    barbero_id:       walkBarbId,
+                    servicio_id:      walkServId,
+                    fecha_iso:        hoyISO,
+                    hora_inicio:      horaActual,
+                    notas:            "Walk-In — sin reserva previa",
+                    comprobante_url:  null,
+                  });
+                  setShowWalk(false);
+                  setWalkNombre("");
+                  setWalkBarbId(null);
+                  setWalkServId(null);
+                } catch(e) {
+                  console.error("Walk-in error:", e);
+                  alert("Error al crear el turno. Intenta de nuevo.");
+                }
+                setWalkSaving(false);
+              }}>
+              {walkSaving ? "Creando turno..." : "Agregar a Cola"}
             </button>
           </div>
         </div>
@@ -2430,7 +2454,7 @@ export default function App() {
       {view === "home"     && <Home onNav={nav} barberos={barberos} servicios={servicios} />}
       {view === "reservas" && <Reservas initData={initData} barberos={barberos} servicios={servicios} />}
       {view === "admin"    && <SuperAdmin nav={nav} barberos={barberos} servicios={servicios} />}
-      {view === "monitor"  && <Monitor barberos={barberos} />}
+      {view === "monitor"  && <Monitor barberos={barberos} servicios={servicios} />}
       {view === "pin"      && !barberoLogueado && <PinLogin onSuccess={b => { setBarberoLogueado(b); navigate("/barbero"); }} barberos={barberos} />}
       {view === "barbero"  && barberoLogueado  && <BarberoPanel barbero={barberoLogueado} onLogout={() => { setBarberoLogueado(null); navigate("/barbero"); }} barberos={barberos} />}
     </div>
