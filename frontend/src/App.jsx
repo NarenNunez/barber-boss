@@ -649,13 +649,14 @@ function Reservas({ initData = {}, barberos, servicios }) {
   const fileRef = useRef();
   const [horasOcupadas, setHorasOcupadas] = useState([]);
 
+  // ✅ FIX: recarga horas ocupadas cada vez que cambia barbero, fecha O paso
   useEffect(() => {
     if (form.barbero?.id && form.fechaISO) {
       api.getHorasOcupadas(form.barbero.id, form.fechaISO)
         .then(data => setHorasOcupadas(data.map(r => r.hora_inicio)))
         .catch(() => {});
     }
-  }, [form.barbero?.id, form.fechaISO]);
+  }, [form.barbero?.id, form.fechaISO, step]);
 
   const STEP_LABELS = ["Datos", "Barbero", "Servicio", "Fecha", "Hora", "Abono", "Confirmar"];
 
