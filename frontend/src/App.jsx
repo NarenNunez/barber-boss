@@ -37,7 +37,7 @@ let RESERVAS_INIT = [
 
 const DIAS  = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-const HORAS_DISP = ["9:00 AM","9:30 AM","10:00 AM","10:30 AM","11:00 AM","11:30 AM","12:00 PM","12:30 PM","1:00 PM","1:30 PM","2:00 PM","2:30 PM","3:00 PM","3:30 PM","4:00 PM","4:30 PM","5:00 PM","5:30 PM"];
+const HORAS_DISP = ["9:00 AM","9:30 AM","10:00 AM","10:30 AM","11:00 AM","11:30 AM","12:00 PM","12:30 PM","1:00 PM","1:30 PM","2:00 PM","2:30 PM","3:00 PM","3:30 PM","4:00 PM","4:30 PM","5:00 PM","5:30 PM","6:00 PM","6:30 PM","7:00 PM","7:30 PM"];
 const fmtCOP = n => `$${Number(n).toLocaleString("es-CO")}`;
 
 // ─────────────────────────────────────────────
@@ -695,6 +695,7 @@ function Reservas({ initData = {}, barberos, servicios }) {
           <a href={`https://wa.me/573215557890?text=Hola, soy ${form.nombre}. Envié el comprobante de abono para mi cita el ${form.fecha} a las ${form.hora} con ${form.barbero?.nombre}.`} target="_blank" rel="noreferrer">
             <button className="btn-gold" style={{ width: "100%", marginBottom: 12 }}>📱 Confirmar por WhatsApp</button>
           </a>
+          <button className="btn-ghost" style={{ width: "100%" }} onClick={() => { setStep(1); setForm({ nombre: "", telefono: "", email: "", barbero: null, servicio: null, fecha: "", hora: "" }); }}>← Volver al Inicio</button>
         </div>
       </div>
     </div>
@@ -753,7 +754,7 @@ function Reservas({ initData = {}, barberos, servicios }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {servicios.map(s => (
                 <div key={s.id} className={`opt ${form.servicio?.id === s.id ? "sel" : ""}`} onClick={() => setForm({ ...form, servicio: s })} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", textAlign: "left" }}>
-                  <div><div className="opt-name">{s.nombre}</div><div className="opt-sub">{s.duracion} min</div></div>
+                  <div><div className="opt-name">{s.nombre}</div><div className="opt-sub">{s.duracion_min || s.duracion} min</div></div>
                   <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, fontStyle: "italic", color: "var(--gold)" }}>{fmtCOP(s.precio)}</div>
                 </div>
               ))}
