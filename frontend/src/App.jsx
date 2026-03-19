@@ -1634,10 +1634,10 @@ function SuperAdmin({ barberos, servicios }) {
           {/* ACCESOS RÁPIDOS */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 10, marginBottom: 20 }}>
             {[
-              { label: "Nueva Cita", icon: "＋", action: () => setNuevaCitaModal(true), color: "var(--gold)", bg: "rgba(212,175,55,.08)", border: "rgba(212,175,55,.25)" },
-              { label: "Ver Abonos", icon: "💳", action: () => setTab("abonos"), color: "#F59E0B", bg: "rgba(245,158,11,.06)", border: "rgba(245,158,11,.2)", badge: pendAbonoTotal },
-              { label: "Todas las Citas", icon: "📋", action: () => setTab("reservas"), color: "#3B82F6", bg: "rgba(59,130,246,.06)", border: "rgba(59,130,246,.2)" },
-              { label: "Ver Reportes", icon: "📊", action: () => setTab("reportes"), color: "var(--libre)", bg: "rgba(16,185,129,.06)", border: "rgba(16,185,129,.2)" },
+              { label: "Nueva Cita", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>, action: () => setNuevaCitaModal(true), color: "var(--gold)", bg: "rgba(212,175,55,.08)", border: "rgba(212,175,55,.25)" },
+              { label: "Ver Abonos", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>, action: () => setTab("abonos"), color: "#F59E0B", bg: "rgba(245,158,11,.06)", border: "rgba(245,158,11,.2)", badge: pendAbonoTotal },
+              { label: "Todas las Citas", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, action: () => setTab("reservas"), color: "#3B82F6", bg: "rgba(59,130,246,.06)", border: "rgba(59,130,246,.2)" },
+              { label: "Ver Reportes", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, action: () => setTab("reportes"), color: "var(--libre)", bg: "rgba(16,185,129,.06)", border: "rgba(16,185,129,.2)" },
             ].map(a => (
               <button key={a.label} onClick={a.action} style={{
                 background: a.bg, border: `1px solid ${a.border}`, padding: "12px 16px",
