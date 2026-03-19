@@ -749,8 +749,9 @@ function Reservas({ initData = {}, barberos, servicios }) {
             <div className="ftitle">Elige la Fecha</div>
             <div className="fsub">Selecciona el día de tu cita</div>
             <div className="day-grid">
+              {/* ✅ FIX: incluye hoy como opción */}
               {Array.from({ length: 14 }, (_, i) => {
-                const d = new Date(); d.setDate(d.getDate() + i + 1);
+                const d = new Date(); d.setDate(d.getDate() + i);
                 const lbl = `${DIAS[d.getDay()].slice(0, 3)} ${d.getDate()} ${MESES[d.getMonth()]}`;
                 return (
                   <div key={i} className={`day ${form.fecha === lbl ? "sel" : ""}`} onClick={() => {
@@ -1293,6 +1294,9 @@ function SuperAdmin({ barberos, servicios }) {
   const hoy = new Date().toISOString().split('T')[0];
   const [editModal, setEditModal] = useState(null);
   const [reagendarModal, setReagendarModal] = useState(null);
+  const [nuevaCitaModal, setNuevaCitaModal] = useState(false);
+  const [nuevaCitaForm, setNuevaCitaForm] = useState({ nombre: "", telefono: "", barbero_id: "", servicio_id: "", fecha: new Date().toISOString().split('T')[0], hora: "" });
+  const [nuevaCitaSaving, setNuevaCitaSaving] = useState(false);
   const [toasts, setToasts] = useState([]);
   const reservasRef = React.useRef([]);
 
@@ -1582,6 +1586,7 @@ function SuperAdmin({ barberos, servicios }) {
               <input type="date" value={fechaFiltro || ""} onChange={e => setFechaFiltro(e.target.value || null)}
                 style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--text)", padding: "7px 12px", fontSize: 12, fontFamily: "'DM Sans',sans-serif", cursor: "pointer" }} />
               {fechaFiltro && <button className="act-btn g" onClick={() => setFechaFiltro(null)}>Ver todas</button>}
+              <button className="btn-gold" style={{ padding: "7px 16px", fontSize: 11 }} onClick={() => setNuevaCitaModal(true)}>+ Nueva Cita</button>
             </div>
           </div>
           <div className="blk">
@@ -1817,6 +1822,96 @@ function SuperAdmin({ barberos, servicios }) {
             <button className="modal-close" onClick={() => setEditModal(null)}>✕</button>
             <div className="modal-title">Editar Barbero</div>
             <EditBarberoForm barbero={editModal} onClose={() => setEditModal(null)} onSaved={() => { setEditModal(null); window.location.reload(); }} />
+          </div>
+        </div>
+      )}
+
+      {/* MEJORA: Modal Nueva Cita (Admin) */}
+      {nuevaCitaModal && (
+        <div className="overlay fade" onClick={e => e.target === e.currentTarget && setNuevaCitaModal(false)}>
+          <div className="modal" style={{ maxWidth: 540 }}>
+            <button className="modal-close" onClick={() => setNuevaCitaModal(false)}>✕</button>
+            <div className="modal-title">Nueva Cita</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="field">
+                <label className="flabel">Nombre Cliente</label>
+                <input className="finput" placeholder="Nombre completo" value={nuevaCitaForm.nombre}
+                  onChange={e => setNuevaCitaForm(p => ({ ...p, nombre: e.target.value }))} />
+              </div>
+              <div className="field">
+                <label className="flabel">Teléfono</label>
+                <input className="finput" placeholder="3001234567" value={nuevaCitaForm.telefono}
+                  onChange={e => setNuevaCitaForm(p => ({ ...p, telefono: e.target.value }))} />
+              </div>
+            </div>
+            <div className="field">
+              <label className="flabel">Barbero</label>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 8 }}>
+                {barberos.map(b => (
+                  <div key={b.id} className={`opt ${nuevaCitaForm.barbero_id === b.id ? "sel" : ""}`}
+                    style={{ padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}
+                    onClick={() => setNuevaCitaForm(p => ({ ...p, barbero_id: b.id }))}>
+                    <div style={{ width: 24, height: 24, borderRadius: "50%", background: b.color, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "#000" }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
+                    <span style={{ fontSize: 12 }}>{b.nombre.split(" ")[0]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="field">
+              <label className="flabel">Servicio</label>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {servicios.map(s => (
+                  <div key={s.id} className={`opt ${nuevaCitaForm.servicio_id === s.id ? "sel" : ""}`}
+                    style={{ padding: "8px 12px", display: "flex", justifyContent: "space-between" }}
+                    onClick={() => setNuevaCitaForm(p => ({ ...p, servicio_id: s.id }))}>
+                    <span style={{ fontSize: 13 }}>{s.nombre}</span>
+                    <span style={{ fontSize: 13, color: "var(--gold)", fontFamily: "'Playfair Display',serif", fontStyle: "italic" }}>{fmtCOP(s.precio)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="field">
+                <label className="flabel">Fecha</label>
+                <input type="date" className="finput" value={nuevaCitaForm.fecha}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={e => setNuevaCitaForm(p => ({ ...p, fecha: e.target.value }))} />
+              </div>
+              <div className="field">
+                <label className="flabel">Hora</label>
+                <input type="time" className="finput" value={nuevaCitaForm.hora}
+                  onChange={e => setNuevaCitaForm(p => ({ ...p, hora: e.target.value }))} />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+              <button className="btn-back" style={{ flex: 1 }} onClick={() => setNuevaCitaModal(false)}>Cancelar</button>
+              <button className="btn-next" style={{ flex: 2 }}
+                disabled={nuevaCitaSaving || !nuevaCitaForm.nombre || !nuevaCitaForm.telefono || !nuevaCitaForm.barbero_id || !nuevaCitaForm.servicio_id || !nuevaCitaForm.fecha || !nuevaCitaForm.hora}
+                onClick={async () => {
+                  setNuevaCitaSaving(true);
+                  try {
+                    await api.crearReserva({
+                      cliente_nombre:   nuevaCitaForm.nombre,
+                      cliente_telefono: nuevaCitaForm.telefono,
+                      barbero_id:       nuevaCitaForm.barbero_id,
+                      servicio_id:      nuevaCitaForm.servicio_id,
+                      fecha_iso:        nuevaCitaForm.fecha,
+                      hora_inicio:      nuevaCitaForm.hora,
+                      notas:            "Creada desde panel admin",
+                      comprobante_url:  null,
+                    });
+                    setNuevaCitaModal(false);
+                    setNuevaCitaForm({ nombre: "", telefono: "", barbero_id: "", servicio_id: "", fecha: new Date().toISOString().split('T')[0], hora: "" });
+                    addToast("Cita creada correctamente", "info");
+                  } catch(e) {
+                    console.error(e);
+                    addToast("Error al crear la cita", "info");
+                  }
+                  setNuevaCitaSaving(false);
+                }}>
+                {nuevaCitaSaving ? "Creando..." : "✓ Crear Cita"}
+              </button>
+            </div>
           </div>
         </div>
       )}
