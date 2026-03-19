@@ -2227,8 +2227,9 @@ function PinLogin({ onSuccess, barberos }) {
         <div className="pin-barb-sel">
           {barberos.map(b => (
             <div key={b.id} className={`pin-barb ${barbSelId === b.id ? "sel" : ""}`}
-              style={{ background: b.color }} onClick={() => { setBarbSelId(b.id); setPin(""); setErr(""); }}>
-              {b.iniciales}
+              style={{ background: b.color, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Playfair Display',serif", fontStyle: "italic", fontWeight: 700, fontSize: 18, color: "#000", letterSpacing: 0 }}
+              onClick={() => { setBarbSelId(b.id); setPin(""); setErr(""); }}>
+              {b.nombre?.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase()}
             </div>
           ))}
         </div>
