@@ -2397,6 +2397,11 @@ function Monitor({ barberos, servicios }) {
           const proximaCita = getProximaCita(b.id);
           const cola = getCola(b.id);
           const citaActiva = citaEnCurso || proximaCita;
+          // Próximas 3 citas pendientes de este barbero
+          const proximas3 = reservas
+            .filter(r => r.barbero?.id === b.id && r.estado === 'pendiente')
+            .sort((a, x) => a.hora_inicio.localeCompare(x.hora_inicio))
+            .slice(0, 3);
           return (
             <div key={b.id} className={`mon-card ${estado}`}>
               <div>
@@ -2410,11 +2415,32 @@ function Monitor({ barberos, servicios }) {
               <div>
                 <div className="mon-label">{estado === "ocupado" ? "En Silla" : "Próxima Cita"}</div>
                 {citaActiva
-                  ? <><div className="mon-cliente">{citaActiva.cliente_nombre}</div><div className="mon-hora">{citaActiva.hora_inicio}</div></>
+                  ? <>
+                      <div className="mon-cliente">{citaActiva.cliente_nombre}</div>
+                      {/* ✅ FIX: mostrar solo HH:MM sin segundos */}
+                      <div className="mon-hora">{citaActiva.hora_inicio?.slice(0,5)}</div>
+                      <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{citaActiva.servicio?.nombre}</div>
+                    </>
                   : <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, fontStyle: "italic", color: "var(--muted)" }}>Sin reservas</div>
                 }
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "auto" }}>
+              {/* ✅ MEJORA: próximas 3 citas del barbero */}
+              {proximas3.length > 0 && (
+                <div style={{ borderTop: "1px solid rgba(255,255,255,.06)", paddingTop: 10, marginTop: 4 }}>
+                  <div className="mon-label" style={{ marginBottom: 6 }}>Cola de espera</div>
+                  {proximas3.map((c, i) => (
+                    <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 0", borderBottom: i < proximas3.length - 1 ? "1px solid rgba(255,255,255,.04)" : "none" }}>
+                      <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 15, fontStyle: "italic", color: i === 0 ? "#fff" : "var(--muted)" }}>
+                        {c.cliente_nombre?.split(" ")[0]}
+                      </div>
+                      <div style={{ fontSize: 12, color: "var(--gold)", fontWeight: 600 }}>
+                        {c.hora_inicio?.slice(0,5)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "auto", paddingTop: 10 }}>
                 <div>
                   <div className="mon-label">Cola</div>
                   <div className="mon-cola" style={{ color: cola > 0 ? "var(--gold)" : "var(--muted)" }}>{cola}</div>
@@ -2437,9 +2463,11 @@ function Monitor({ barberos, servicios }) {
           <div className="mon-stat"><strong>Cola total:</strong> {barberos.reduce((a, b) => a + getCola(b.id), 0)} personas</div>
         </div>
         <div className="mon-prox-list">
-          {reservas.filter(r => r.estado === "pendiente").slice(0, 3).map(r => (
+          {reservas.filter(r => r.estado === "pendiente")
+            .sort((a,b) => a.hora_inicio.localeCompare(b.hora_inicio))
+            .slice(0, 3).map(r => (
             <div key={r.id} className="mon-prox-item">
-              <strong>{r.hora_inicio}</strong> · {r.cliente_nombre?.split(" ")[0]} → <span style={{ color: r.barbero?.color }}>{r.barbero?.nombre?.split(" ")[0]}</span>
+              <strong>{r.hora_inicio?.slice(0,5)}</strong> · {r.cliente_nombre?.split(" ")[0]} → <span style={{ color: r.barbero?.color }}>{r.barbero?.nombre?.split(" ")[0]}</span>
             </div>
           ))}
         </div>
