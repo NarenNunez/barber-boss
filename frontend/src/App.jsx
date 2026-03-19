@@ -776,16 +776,17 @@ function Reservas({ initData = {}, barberos, servicios }) {
             <div className="fsub">Disponibilidad de {form.barbero?.nombre.split(" ")[0]} · {form.fecha}</div>
             <div className="hora-grid">
               {HORAS_DISP.map(h => {
-                const ocp = horasOcupadas.some(ho => ho.startsWith(h.split(':')[0].padStart(2,'0')));
+                // ✅ FIX: convertir h a formato 24h exacto para comparar correctamente
+                const [time, ampm] = h.split(' ');
+                let [hh, mm] = time.split(':');
+                hh = parseInt(hh);
+                if (ampm === 'PM' && hh !== 12) hh += 12;
+                if (ampm === 'AM' && hh === 12) hh = 0;
+                const hora24 = `${String(hh).padStart(2,'0')}:${mm}`;
+                const ocp = horasOcupadas.some(ho => ho.slice(0,5) === hora24);
                 return (
                   <div key={h} className={`hora ${form.hora === h ? "sel" : ""} ${ocp ? "ocp" : ""}`} onClick={() => {
                     if (!ocp) {
-                      const [time, ampm] = h.split(' ');
-                      let [hh, mm] = time.split(':');
-                      hh = parseInt(hh);
-                      if (ampm === 'PM' && hh !== 12) hh += 12;
-                      if (ampm === 'AM' && hh === 12) hh = 0;
-                      const hora24 = `${String(hh).padStart(2,'0')}:${mm}`;
                       setForm({ ...form, hora: h, hora24 });
                     }
                   }}>
