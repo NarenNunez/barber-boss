@@ -1329,6 +1329,38 @@ function SuperAdmin({ barberos, servicios }) {
     });
     return unsub;
   }, [fechaFiltro]);
+  // ✅ AUTO-INICIO: cada minuto revisa citas pendientes con abono aprobado
+  useEffect(() => {
+    const autoIniciar = async () => {
+      const ahora = new Date();
+      const hoyStr = ahora.toISOString().split('T')[0];
+      const horaActual = `${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
+
+      const citasParaIniciar = reservasRef.current.filter(r =>
+        r.estado === 'pendiente' &&
+        r.abono_estado === 'aprobado' &&
+        r.fecha === hoyStr &&
+        r.hora_inicio?.slice(0, 5) <= horaActual
+      );
+
+      for (const cita of citasParaIniciar) {
+        try {
+          await api.actualizarEstadoReserva(cita.id, 'en_curso');
+          setReservas(p => p.map(r => r.id === cita.id ? { ...r, estado: 'en_curso' } : r));
+          reservasRef.current = reservasRef.current.map(r => r.id === cita.id ? { ...r, estado: 'en_curso' } : r);
+          addToast(`Cita de ${cita.cliente_nombre} iniciada automáticamente`, "info");
+        } catch(e) {
+          console.error('Error auto-inicio:', e);
+        }
+      }
+    };
+
+    // Ejecutar inmediatamente al cargar y luego cada minuto
+    autoIniciar();
+    const intervalo = setInterval(autoIniciar, 60000);
+    return () => clearInterval(intervalo);
+  }, []);
+
   const [abonoModal, setAbonoModal] = useState(null);
   const PIN_ADMIN = "0000";
 
@@ -2153,6 +2185,36 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
     return unsub;
   }, []);
   const misCitas = reservas.filter(r => r.barbero?.id === barbero.id);
+
+  // ✅ AUTO-INICIO en panel barbero
+  useEffect(() => {
+    const autoIniciar = async () => {
+      const ahora = new Date();
+      const hoyStr = ahora.toISOString().split('T')[0];
+      const horaActual = `${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
+
+      const citasParaIniciar = reservas.filter(r =>
+        r.barbero?.id === barbero.id &&
+        r.estado === 'pendiente' &&
+        r.abono_estado === 'aprobado' &&
+        r.fecha === hoyStr &&
+        r.hora_inicio?.slice(0, 5) <= horaActual
+      );
+
+      for (const cita of citasParaIniciar) {
+        try {
+          await api.actualizarEstadoReserva(cita.id, 'en_curso');
+          setReservas(p => p.map(r => r.id === cita.id ? { ...r, estado: 'en_curso' } : r));
+        } catch(e) {
+          console.error('Error auto-inicio barbero:', e);
+        }
+      }
+    };
+
+    autoIniciar();
+    const intervalo = setInterval(autoIniciar, 60000);
+    return () => clearInterval(intervalo);
+  }, [reservas]);
 
   return (
     <div className="bp">
