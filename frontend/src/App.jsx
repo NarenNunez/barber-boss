@@ -541,6 +541,23 @@ function Home({ onNav }) {
         <div className="hero-grain" />
         <div className="hero-glow" />
         <div className="hero-lines" />
+        {/* Logo marca de agua */}
+        <div style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -54%)",
+          width: "clamp(320px, 55vw, 680px)",
+          height: "clamp(320px, 55vw, 680px)",
+          backgroundImage: "url(https://cpanozlsttqdmixgxtum.supabase.co/storage/v1/object/public/comprobantes/comprobantes/Gemini_Generated_Image_6kjwwi6kjwwi6kjw-removebg-preview.png)",
+          backgroundSize: "contain",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+          opacity: 0.06,
+          pointerEvents: "none",
+          zIndex: 1,
+          filter: "grayscale(100%)",
+        }} />
         <div className="hero-content fade">
           <div className="hero-eyebrow">Estilo · Precisión · Distinción</div>
           <div className="hero-title">
