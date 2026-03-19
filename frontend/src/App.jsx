@@ -1435,7 +1435,7 @@ const aprobAbono = async id => {
                       <div style={{ fontWeight: 600, fontSize: 13 }}>{r.cliente_nombre}</div>
                       <div style={{ fontSize: 11, color: "var(--muted)" }}>{r.servicio?.nombre} · {r.barbero?.nombre.split(" ")[0]}</div>
                     </div>
-                    <div style={{ fontSize: 12, color: "#9CA3AF", marginRight: 8 }}>{r.hora}</div>
+                    <div style={{ fontSize: 12, color: "#9CA3AF", marginRight: 8 }}>{r.hora_inicio?.slice(0,5)}</div>
                     <span className={`badge ${r.estado}`}>{r.estado.replace("_", " ")}</span>
                   </div>
                 );
@@ -1508,7 +1508,7 @@ const aprobAbono = async id => {
                     <tr key={r.id}>
                       <td><div style={{ fontWeight: 600 }}>{r.cliente_nombre}</div><div style={{ fontSize: 11, color: "var(--muted)" }}>📱 {r.cliente_tel}</div></td>
                       <td><div style={{ display: "flex", alignItems: "center", gap: 7 }}><div className="av-sm" style={{ background: r.barbero?.color, width: 26, height: 26, fontSize: 10 }}>{r.barbero?.nombre?.slice(0,2).toUpperCase()}</div>{r.barbero?.nombre.split(" ")[0]}</div></td>
-                      <td style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", color: "var(--gold)" }}>{r.hora}</td>
+                      <td style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", color: "var(--gold)" }}>{r.hora_inicio?.slice(0,5)}</td>
                       <td style={{ fontSize: 12 }}>{r.servicio?.nombre}</td>
                       <td>
                         {r.comprobante_url
@@ -1555,7 +1555,7 @@ const aprobAbono = async id => {
                   
                   return (
                     <tr key={r.id}>
-                      <td style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", color: "var(--gold)" }}>{r.hora}</td>
+                      <td style={{ fontFamily: "'Playfair Display',serif", fontSize: 18, fontStyle: "italic", color: "var(--gold)" }}>{r.hora_inicio?.slice(0,5)}</td>
                       <td><div style={{ fontWeight: 600 }}>{r.cliente_nombre}</div><div style={{ fontSize: 11, color: "var(--muted)" }}>📱 {r.cliente_tel}</div></td>
                       <td><div style={{ display: "flex", alignItems: "center", gap: 7 }}><div className="av-sm" style={{ background: r.barbero?.color, width: 26, height: 26, fontSize: 10 }}>{r.barbero?.nombre?.slice(0,2).toUpperCase()}</div>{r.barbero?.nombre.split(" ")[0]}</div></td>
                       <td style={{ fontSize: 12 }}>{r.servicio?.nombre}</td>
@@ -1563,7 +1563,7 @@ const aprobAbono = async id => {
                       <td><span className={`badge ${r.estado}`}>{r.estado.replace("_", " ")}</span></td>
                       <td>
                         <div style={{ display: "flex", gap: 5 }}>
-                          {r.estado === "pendiente" && r.abono_estado === "aprobado" && <button className="act-btn s" onClick={() => iniciar(r.id)}>Iniciar</button>}
+                          {r.estado === "pendiente" && <button className="act-btn s" onClick={() => iniciar(r.id)}>Iniciar</button>}
                           {r.estado === "en_curso" && <button className="act-btn p" onClick={() => completar(r.id)}>Completar</button>}
                           {(r.estado === "pendiente" || r.estado === "en_curso") && <button className="act-btn d" onClick={() => cancelar(r.id)}>Cancelar</button>}
                         </div>
@@ -1724,19 +1724,30 @@ const aprobAbono = async id => {
             <button className="modal-close" onClick={() => setAbonoModal(null)}>✕</button>
             <div className="modal-title">Comprobante de Abono</div>
             <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 10, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 3 }}>Cliente</div>
-                <div style={{ fontWeight: 600 }}>{abonoModal.cliente}</div>
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 10, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 3 }}>Servicio</div>
-                <div style={{ fontWeight: 600 }}>{abonoModal.servicio}</div>
-              </div>
-            </div>
-            <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid var(--border)", padding: 40, textAlign: "center", marginBottom: 20 }}>
-              <div style={{ fontSize: 40, marginBottom: 8 }}>📄</div>
-              <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 15, fontStyle: "italic", color: "var(--muted)" }}>{abonoModal.comprobante}</div>
-            </div>
+                      <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 3 }}>Cliente</div>
+                  <div style={{ fontWeight: 600 }}>{abonoModal.cliente_nombre}</div>
+                 <div style={{ fontSize: 11, color: "var(--muted)" }}>📱 {abonoModal.cliente_tel}</div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 10, color: "var(--muted)", letterSpacing: 2, textTransform: "uppercase", marginBottom: 3 }}>Servicio</div>
+                   <div style={{ fontWeight: 600 }}>{abonoModal.servicio?.nombre}</div>
+                  </div>
+                     </div>
+            <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid var(--border)", padding: 12, textAlign: "center", marginBottom: 20 }}>
+               {abonoModal.comprobante_url ? (
+                       <img
+                     src={abonoModal.comprobante_url}
+                         alt="Comprobante"
+                      style={{ maxWidth: "100%", maxHeight: 400, objectFit: "contain", borderRadius: 2 }}
+                        />
+                     ) : (
+                         <div style={{ fontSize: 13, color: "var(--muted)", fontStyle: "italic", padding: 28 }}>
+                      <div style={{ fontSize: 32, marginBottom: 8 }}>📄</div>
+                        Sin comprobante adjunto
+                        </div>
+                       )}
+                       </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button className="act-btn s" style={{ flex: 1, padding: "12px 0", fontSize: 12 }} onClick={() => { aprobAbono(abonoModal.id); setAbonoModal(null); }}>✓ Aprobar Abono</button>
               <button className="act-btn d" style={{ flex: 1, padding: "12px 0", fontSize: 12 }} onClick={() => { rechAbono(abonoModal.id); setAbonoModal(null); }}>✗ Rechazar</button>
