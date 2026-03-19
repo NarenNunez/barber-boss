@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { api } from './api.js';
 import { supabase } from './supabase.js';
@@ -1292,13 +1292,36 @@ function SuperAdmin({ barberos, servicios }) {
   const [reservas, setReservas] = useState([]);
   const hoy = new Date().toISOString().split('T')[0];
   const [editModal, setEditModal] = useState(null);
+  const [reagendarModal, setReagendarModal] = useState(null);
+  const [toasts, setToasts] = useState([]);
+  const reservasRef = React.useRef([]);
+
+  const addToast = (msg, tipo = "info") => {
+    const id = Date.now();
+    setToasts(p => [...p, { id, msg, tipo }]);
+    setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 5000);
+  };
 
   const [fechaFiltro, setFechaFiltro] = useState(null);
 
   useEffect(() => {
-    api.getReservas(fechaFiltro).then(data => setReservas(data)).catch(() => {});
-    const unsub = api.suscribirReservas(() => {
-      api.getReservas(fechaFiltro).then(data => setReservas(data)).catch(() => {});
+    api.getReservas(fechaFiltro).then(data => {
+      setReservas(data);
+      reservasRef.current = data;
+    }).catch(() => {});
+    const unsub = api.suscribirReservas((payload) => {
+      api.getReservas(fechaFiltro).then(data => {
+        // Detectar nueva reserva
+        if (payload.eventType === 'INSERT') {
+          addToast(`Nueva cita: ${payload.new?.cliente_nombre || "Cliente"} acaba de reservar`, "nueva");
+        }
+        // Detectar nuevo comprobante
+        if (payload.eventType === 'UPDATE' && payload.new?.abono_estado === 'pendiente' && payload.old?.abono_estado === 'sin_abono') {
+          addToast(`Comprobante recibido de ${payload.new?.cliente_nombre || "un cliente"}`, "abono");
+        }
+        setReservas(data);
+        reservasRef.current = data;
+      }).catch(() => {});
     });
     return unsub;
   }, [fechaFiltro]);
@@ -1575,10 +1598,11 @@ function SuperAdmin({ barberos, servicios }) {
                       <td><span className={`badge ${r.abono_estado}`}>{r.abono_estado.replace("_", " ")}</span></td>
                       <td><span className={`badge ${r.estado}`}>{r.estado.replace("_", " ")}</span></td>
                       <td>
-                        <div style={{ display: "flex", gap: 5 }}>
+                        <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                           {r.estado === "pendiente" && <button className="act-btn s" onClick={() => iniciar(r.id)}>Iniciar</button>}
                           {r.estado === "en_curso" && <button className="act-btn p" onClick={() => completar(r.id)}>Completar</button>}
                           {(r.estado === "pendiente" || r.estado === "en_curso") && <button className="act-btn d" onClick={() => cancelar(r.id)}>Cancelar</button>}
+                          {(r.estado === "pendiente") && <button className="act-btn g" onClick={() => setReagendarModal(r)}>📅 Reagendar</button>}
                         </div>
                       </td>
                     </tr>
@@ -1796,6 +1820,64 @@ function SuperAdmin({ barberos, servicios }) {
           </div>
         </div>
       )}
+
+      {/* MEJORA: Modal Reagendar */}
+      {reagendarModal && (
+        <div className="overlay fade" onClick={e => e.target === e.currentTarget && setReagendarModal(null)}>
+          <div className="modal">
+            <button className="modal-close" onClick={() => setReagendarModal(null)}>✕</button>
+            <div className="modal-title">Reagendar Cita</div>
+            <div style={{ marginBottom: 18, background: "rgba(255,255,255,.02)", border: "1px solid var(--border)", padding: 16 }}>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>{reagendarModal.cliente_nombre}</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>{reagendarModal.servicio?.nombre} · {reagendarModal.barbero?.nombre}</div>
+              <div style={{ fontSize: 12, color: "var(--gold)", marginTop: 4 }}>Actual: {reagendarModal.fecha} a las {reagendarModal.hora_inicio?.slice(0,5)}</div>
+            </div>
+            <div className="field">
+              <label className="flabel">Nueva Fecha</label>
+              <input type="date" className="finput" id="reagendar-fecha" defaultValue={reagendarModal.fecha}
+                min={new Date().toISOString().split('T')[0]} />
+            </div>
+            <div className="field">
+              <label className="flabel">Nueva Hora</label>
+              <input type="time" className="finput" id="reagendar-hora" defaultValue={reagendarModal.hora_inicio?.slice(0,5)} />
+            </div>
+            <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+              <button className="btn-back" style={{ flex: 1 }} onClick={() => setReagendarModal(null)}>Cancelar</button>
+              <button className="btn-next" style={{ flex: 2 }} onClick={async () => {
+                const nuevaFecha = document.getElementById('reagendar-fecha').value;
+                const nuevaHora = document.getElementById('reagendar-hora').value;
+                if (!nuevaFecha || !nuevaHora) return;
+                const { error } = await supabase.from('reservas')
+                  .update({ fecha: nuevaFecha, hora_inicio: nuevaHora })
+                  .eq('id', reagendarModal.id);
+                if (!error) {
+                  addToast(`Cita de ${reagendarModal.cliente_nombre} reagendada`, "info");
+                  setReservas(p => p.map(r => r.id === reagendarModal.id ? { ...r, fecha: nuevaFecha, hora_inicio: nuevaHora } : r));
+                  setReagendarModal(null);
+                }
+              }}>Guardar Nueva Hora</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MEJORA: Toast notifications */}
+      <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 9999, display: "flex", flexDirection: "column", gap: 10 }}>
+        {toasts.map(t => (
+          <div key={t.id} className="fade" style={{
+            background: t.tipo === "nueva" ? "rgba(16,185,129,.15)" : t.tipo === "abono" ? "rgba(245,158,11,.15)" : "rgba(59,130,246,.15)",
+            border: `1px solid ${t.tipo === "nueva" ? "rgba(16,185,129,.4)" : t.tipo === "abono" ? "rgba(245,158,11,.4)" : "rgba(59,130,246,.4)"}`,
+            color: t.tipo === "nueva" ? "var(--libre)" : t.tipo === "abono" ? "var(--proximo)" : "#3B82F6",
+            padding: "12px 18px", fontSize: 13, fontFamily: "'DM Sans',sans-serif",
+            maxWidth: 320, display: "flex", alignItems: "center", gap: 10,
+          }}>
+            <span>{t.tipo === "nueva" ? "📅" : t.tipo === "abono" ? "💳" : "ℹ️"}</span>
+            <span>{t.msg}</span>
+            <button onClick={() => setToasts(p => p.filter(x => x.id !== t.id))}
+              style={{ marginLeft: "auto", background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 14 }}>✕</button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -2019,10 +2101,16 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
               <span className={`badge ${r.estado}`}>{r.estado.replace("_", " ")}</span>
               <div className="cita-btns">
                 {r.estado === "pendiente" && r.abono_estado === "aprobado" && (
-                  <button className="act-btn s" onClick={() => setReservas(p => p.map(x => x.id === r.id ? { ...x, estado: "en_curso" } : x))}>Iniciar</button>
+                  <button className="act-btn s" onClick={async () => {
+                    await api.actualizarEstadoReserva(r.id, "en_curso");
+                    setReservas(p => p.map(x => x.id === r.id ? { ...x, estado: "en_curso" } : x));
+                  }}>Iniciar</button>
                 )}
                 {r.estado === "en_curso" && (
-                  <button className="act-btn p" onClick={() => setReservas(p => p.map(x => x.id === r.id ? { ...x, estado: "completado" } : x))}>✓ Completar</button>
+                  <button className="act-btn p" onClick={async () => {
+                    await api.actualizarEstadoReserva(r.id, "completado");
+                    setReservas(p => p.map(x => x.id === r.id ? { ...x, estado: "completado" } : x));
+                  }}>✓ Completar</button>
                 )}
                 <a href={`https://wa.me/57${r.cliente_tel}`} target="_blank" rel="noreferrer">
                   <button className="act-btn" style={{ background: "rgba(37,211,102,.12)", color: "#25D366", borderRadius: 1 }}>📱</button>
@@ -2042,14 +2130,21 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
   <GananciasPanel barbero={barbero} misCitas={misCitas} />
   <div className="blk">
     <div className="blk-title">Ranking del Equipo</div>
-    {[...barberos].sort((a, b) => b.nombre.localeCompare(a.nombre)).map((b, i) => (
+    {/* FIX: Ranking ordenado por completados reales del día */}
+    {[...barberos].map(b => ({
+      ...b,
+      completadosHoy: reservas.filter(r => r.barbero?.id === b.id && r.estado === 'completado').length
+    })).sort((a, b) => b.completadosHoy - a.completadosHoy).map((b, i) => (
       <div key={b.id} className="row">
         <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: i === 0 ? "var(--gold)" : "var(--muted)", width: 28 }}>#{i + 1}</div>
         <div className="av-sm" style={{ background: b.color, border: b.id === barbero.id ? "2px solid var(--gold)" : "none" }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: b.id === barbero.id ? 700 : 400, fontSize: 13, color: b.id === barbero.id ? "#fff" : "var(--muted)" }}>{b.nombre}</div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ fontWeight: b.id === barbero.id ? 700 : 400, fontSize: 13, color: b.id === barbero.id ? "#fff" : "var(--muted)" }}>{b.nombre.split(" ")[0]}</span>
+            <span style={{ fontSize: 12, color: "var(--gold)" }}>{b.completadosHoy} completados</span>
+          </div>
           <div className="prog" style={{ marginTop: 5 }}>
-            <div className="prog-fill" style={{ width: "100%", background: b.id === barbero.id ? "var(--gold)" : b.color, opacity: b.id === barbero.id ? 1 : 0.3 }} />
+            <div className="prog-fill" style={{ width: `${(b.completadosHoy / Math.max(...reservas.filter(r => r.estado==="completado").length > 0 ? [1] : [1], b.completadosHoy + 1)) * 100}%`, background: b.id === barbero.id ? "var(--gold)" : b.color, opacity: b.id === barbero.id ? 1 : 0.6 }} />
           </div>
         </div>
       </div>
@@ -2219,7 +2314,25 @@ function Monitor({ barberos }) {
                 })}
               </div>
             </div>
-            <button className="btn-gold" style={{ width: "100%", marginTop: 4 }} onClick={() => { setShowWalk(false); setWalkNombre(""); setWalkBarbId(null); }}>
+            <button className="btn-gold" style={{ width: "100%", marginTop: 4 }} onClick={async () => {
+              if (!walkNombre.trim() || !walkBarbId) return;
+              try {
+                const hoyISO = new Date().toISOString().split('T')[0];
+                const ahora = new Date();
+                const horaActual = `${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
+                await api.crearReserva({
+                  cliente_nombre:   walkNombre.trim(),
+                  cliente_telefono: "0000000000",
+                  barbero_id:       walkBarbId,
+                  servicio_id:      null,
+                  fecha_iso:        hoyISO,
+                  hora_inicio:      horaActual,
+                  notas:            "Walk-In — sin reserva previa",
+                  comprobante_url:  null,
+                });
+              } catch(e) { console.error("Walk-in error:", e); }
+              setShowWalk(false); setWalkNombre(""); setWalkBarbId(null);
+            }}>
               Agregar a Cola
             </button>
           </div>
