@@ -2853,6 +2853,20 @@ export default function App() {
 
   const view = routeMap[location.pathname] || "home";
 
+  // Título dinámico por vista
+  useEffect(() => {
+    const titles = {
+      home:     "Barber Boss",
+      reservas: "Barber Boss — Reservar Cita",
+      admin:    "Barber Boss — Admin",
+      pin:      "Barber Boss — Acceso Barbero",
+      barbero:  `Barber Boss — ${barberoLogueado?.nombre || "Panel Barbero"}`,
+      monitor:  "Barber Boss — Monitor de Sala",
+      selector: "Barber Boss — Selector",
+    };
+    document.title = titles[view] || "Barber Boss";
+  }, [view, barberoLogueado]);
+
   const nav = (v, data = {}) => {
     setInitData(data);
     const pathMap = {
