@@ -960,6 +960,7 @@ function EditBarberoForm({ barbero, onClose, onSaved }) {
     horario_inicio: barbero.horario_inicio || "",
     horario_fin:    barbero.horario_fin || "",
     color:          barbero.color || "#D4AF37",
+    porcentaje:     barbero.porcentaje || 60,
   });
   const [saving, setSaving] = useState(false);
   const [fotoPreview, setFotoPreview] = useState(barbero.foto_url || null);
@@ -976,11 +977,9 @@ function EditBarberoForm({ barbero, onClose, onSaved }) {
   const guardar = async () => {
     setSaving(true);
     let foto_url = barbero.foto_url;
-
     if (fotoFile) {
       const ext = fotoFile.name.split('.').pop();
       const path = `barbero-${barbero.id}.${ext}`;
-      // ✅ FIX 2: bucket correcto (fotos-barberos) y variable correcta (fotoFile)
       const { error: uploadError } = await supabase.storage
         .from('fotos-barberos')
         .upload(path, fotoFile, { upsert: true });
@@ -989,7 +988,6 @@ function EditBarberoForm({ barbero, onClose, onSaved }) {
         foto_url = data.publicUrl;
       }
     }
-
     await supabase.from('barberos').update({ ...form, foto_url }).eq('id', barbero.id);
     setSaving(false);
     onSaved();
@@ -1033,6 +1031,23 @@ function EditBarberoForm({ barbero, onClose, onSaved }) {
           <input type="color" value={form.color} onChange={e => setForm({ ...form, color: e.target.value })}
             style={{ width: 48, height: 36, border: "none", background: "none", cursor: "pointer" }} />
           <span style={{ fontSize: 13, color: "var(--muted)" }}>{form.color}</span>
+        </div>
+      </div>
+
+      <div className="field">
+        <label className="flabel">Porcentaje del Barbero (%)</label>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <input type="range" min="0" max="100" step="5"
+            value={form.porcentaje}
+            onChange={e => setForm({ ...form, porcentaje: Number(e.target.value) })}
+            style={{ flex: 1, accentColor: "var(--gold)" }} />
+          <div style={{ background: "rgba(212,175,55,.1)", border: "1px solid rgba(212,175,55,.3)", padding: "6px 14px", minWidth: 60, textAlign: "center" }}>
+            <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, fontStyle: "italic", color: "var(--gold)", fontWeight: 700 }}>{form.porcentaje}%</span>
+          </div>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
+          <span>Barbero: <strong style={{ color: "var(--gold)" }}>{form.porcentaje}%</strong></span>
+          <span>Negocio: <strong style={{ color: "var(--libre)" }}>{100 - form.porcentaje}%</strong></span>
         </div>
       </div>
 
