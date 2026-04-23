@@ -2108,7 +2108,7 @@ function SuperAdmin({ barberos, servicios }) {
           <div className="modal">
             <button className="modal-close" onClick={() => setEditModal(null)}>✕</button>
             <div className="modal-title">Editar Barbero</div>
-            <EditBarberoForm barbero={editModal} onClose={() => setEditModal(null)} onSaved={() => { setEditModal(null); window.location.reload(); }} />
+            <EditBarberoForm barbero={editModal} onClose={() => setEditModal(null)} onSaved={() => setEditModal(null)} />
           </div>
         </div>
       )}
