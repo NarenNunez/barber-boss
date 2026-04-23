@@ -976,6 +976,8 @@ function EditBarberoForm({ barbero, onClose, onSaved }) {
 
   const guardar = async () => {
     setSaving(true);
+    console.log('form a guardar:', form);
+    console.log('porcentaje:', form.porcentaje);
     let foto_url = barbero.foto_url;
     if (fotoFile) {
       const ext = fotoFile.name.split('.').pop();
@@ -988,7 +990,12 @@ function EditBarberoForm({ barbero, onClose, onSaved }) {
         foto_url = data.publicUrl;
       }
     }
-    await supabase.from('barberos').update({ ...form, foto_url }).eq('id', barbero.id);
+    const { data, error } = await supabase
+      .from('barberos')
+      .update({ ...form, foto_url })
+      .eq('id', barbero.id)
+      .select();
+    console.log('resultado update:', data, error);
     setSaving(false);
     onSaved();
   };
