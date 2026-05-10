@@ -954,13 +954,13 @@ function Reservas({ initData = {}, barberos, servicios }) {
 }
 function EditBarberoForm({ barbero, onClose, onSaved }) {
   const [form, setForm] = useState({
-    nombre:         barberoData.nombre || "",
-    especialidad:   barberoData.especialidad || "",
-    bio:            barberoData.bio || "",
-    horario_inicio: barberoData.horario_inicio || "",
-    horario_fin:    barberoData.horario_fin || "",
-    color:          barberoData.color || "#D4AF37",
-    porcentaje:     barberoData.porcentaje || 60,
+    nombre:         barbero.nombre || "",
+    especialidad:   barbero.especialidad || "",
+    bio:            barbero.bio || "",
+    horario_inicio: barbero.horario_inicio || "",
+    horario_fin:    barbero.horario_fin || "",
+    color:          barbero.color || "#D4AF37",
+    porcentaje:     barbero.porcentaje || 60,
   });
   const [saving, setSaving] = useState(false);
   const [fotoPreview, setFotoPreview] = useState(barbero.foto_url || null);
@@ -2382,7 +2382,7 @@ function GaleriaEditor({ barbero }) {
       )}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
         {fotos.map(f => (
-          <div key={f.id} style={{ aspectRatio: "1", overflow: "hidden", border: `1px solid ${barberoData.color}25`, position: "relative" }}>
+          <div key={f.id} style={{ aspectRatio: "1", overflow: "hidden", border: `1px solid ${barbero.color}25`, position: "relative" }}>
             <img src={f.url} alt={f.titulo} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.5)", opacity: 0, transition: "opacity .2s", display: "flex", alignItems: "center", justifyContent: "center" }}
               onMouseEnter={e => e.currentTarget.style.opacity = 1}
@@ -2407,7 +2407,7 @@ function GananciasPanel({ barbero, misCitas }) {
       .catch(() => {});
   }, [barbero.id, misCitas.length]);
 
-  const pct = barberoData.porcentaje || 60;
+  const pct = barbero.porcentaje || 60;
   const calc = (total) => Math.round(total * pct / 100);
 
   return (
