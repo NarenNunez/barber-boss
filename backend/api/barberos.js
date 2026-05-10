@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('barberos')
-      .select('id, nombre, especialidad, bio, foto_url, color, horario_inicio, horario_fin, orden')
+      .select('id, nombre, especialidad, bio, foto_url, color, horario_inicio, horario_fin, orden, porcentaje, pin')
       .eq('activo', true)
       .order('orden');
     if (error) throw error;
