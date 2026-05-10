@@ -2558,21 +2558,20 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
   <GananciasPanel barbero={barberoData} misCitas={misCitas} />
   <div className="blk">
     <div className="blk-title">Ranking del Equipo</div>
-    {/* FIX: Ranking ordenado por completados reales del día */}
     {[...barberos].map(b => ({
       ...b,
       completadosHoy: reservas.filter(r => r.barbero?.id === b.id && r.estado === 'completado').length
     })).sort((a, b) => b.completadosHoy - a.completadosHoy).map((b, i) => (
       <div key={b.id} className="row">
         <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: i === 0 ? "var(--gold)" : "var(--muted)", width: 28 }}>#{i + 1}</div>
-        <div className="av-sm" style={{ background: b.color, border: b.id === barbero.id ? "2px solid var(--gold)" : "none" }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
+        <div className="av-sm" style={{ background: b.color, border: b.id === barberoData.id ? "2px solid var(--gold)" : "none" }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontWeight: b.id === barbero.id ? 700 : 400, fontSize: 13, color: b.id === barbero.id ? "#fff" : "var(--muted)" }}>{b.nombre.split(" ")[0]}</span>
+            <span style={{ fontWeight: b.id === barberoData.id ? 700 : 400, fontSize: 13, color: b.id === barberoData.id ? "#fff" : "var(--muted)" }}>{b.nombre.split(" ")[0]}</span>
             <span style={{ fontSize: 12, color: "var(--gold)" }}>{b.completadosHoy} completados</span>
           </div>
           <div className="prog" style={{ marginTop: 5 }}>
-            <div className="prog-fill" style={{ width: `${(b.completadosHoy / Math.max(...reservas.filter(r => r.estado==="completado").length > 0 ? [1] : [1], b.completadosHoy + 1)) * 100}%`, background: b.id === barbero.id ? "var(--gold)" : b.color, opacity: b.id === barbero.id ? 1 : 0.6 }} />
+            <div className="prog-fill" style={{ width: "100%", background: b.id === barberoData.id ? "var(--gold)" : b.color, opacity: b.id === barberoData.id ? 1 : 0.3 }} />
           </div>
         </div>
       </div>
