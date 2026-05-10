@@ -2439,7 +2439,6 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
   const [tab, setTab] = useState("citas");
   const hoy = new Date().toISOString().split('T')[0];
   const [reservas, setReservas] = useState([]);
-
   const [barberoData, setBarberoData] = useState(barbero);
 
   useEffect(() => {
@@ -2455,23 +2454,21 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
     });
     return unsub;
   }, []);
-  const misCitas = reservas.filter(r => r.barbero?.id === barbero.id);
 
-  // ✅ AUTO-INICIO en panel barbero
+  const misCitas = reservas.filter(r => r.barbero?.id === barberoData.id);
+
   useEffect(() => {
     const autoIniciar = async () => {
       const ahora = new Date();
       const hoyStr = ahora.toISOString().split('T')[0];
       const horaActual = `${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
-
       const citasParaIniciar = reservas.filter(r =>
-        r.barbero?.id === barbero.id &&
+        r.barbero?.id === barberoData.id &&
         r.estado === 'pendiente' &&
         r.abono_estado === 'aprobado' &&
         r.fecha === hoyStr &&
         r.hora_inicio?.slice(0, 5) <= horaActual
       );
-
       for (const cita of citasParaIniciar) {
         try {
           await api.actualizarEstadoReserva(cita.id, 'en_curso');
@@ -2481,7 +2478,6 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
         }
       }
     };
-
     autoIniciar();
     const intervalo = setInterval(autoIniciar, 60000);
     return () => clearInterval(intervalo);
@@ -2491,8 +2487,8 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
     <div className="bp">
       <div className="bp-header">
         <div className="bp-av" style={{ background: barberoData.color, overflow: "hidden", padding: 0 }}>
-          {barbero.foto_url
-            ? <img src={barbero.foto_url} alt={barberoData.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          {barberoData.foto_url
+            ? <img src={barberoData.foto_url} alt={barberoData.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             : barberoData.nombre?.slice(0,2).toUpperCase()
           }
         </div>
@@ -2507,17 +2503,17 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
         </div>
         <button style={{ marginLeft: 16, background: "none", border: "1px solid var(--border)", color: "var(--muted)", padding: "7px 14px", cursor: "pointer", fontSize: 11, letterSpacing: 1, fontFamily: "'DM Sans',sans-serif" }} onClick={onLogout}>Salir</button>
       </div>
+
       <div className="bp-body">
         {tab === "citas" && <div className="fade">
           <div style={{ marginBottom: 22 }}>
             <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 700, fontStyle: "italic" }}>Mis Citas de Hoy</div>
-            <div style={{ fontSize: 13, color: "var(--muted)" }}>{misCitas.length} citas · {barberoData.horario}</div>
+            <div style={{ fontSize: 13, color: "var(--muted)" }}>{misCitas.length} citas · {barberoData.horario_inicio?.slice(0,5)} – {barberoData.horario_fin?.slice(0,5)}</div>
           </div>
           {misCitas.length === 0 && <div style={{ color: "var(--muted)", textAlign: "center", padding: "60px 0", fontFamily: "'Cormorant Garamond',serif", fontSize: 18, fontStyle: "italic" }}>Sin citas programadas para hoy</div>}
           {misCitas.map(r => (
             <div key={r.id} className="cita-card">
               <div>
-                {/* ✅ FIX 3: era r.hora.split(" ")[0] — ahora usa hora_inicio */}
                 <div className="cita-hora">{r.hora_inicio?.slice(0,5)}</div>
                 <div className="cita-hora-ampm"></div>
               </div>
@@ -2549,47 +2545,47 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
         </div>}
 
         {tab === "stats" && <div className="fade">
-  <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 700, fontStyle: "italic", marginBottom: 22 }}>Estadísticas</div>
-  <div className="kpi-grid">
-    {[["Completados Hoy", misCitas.filter(r => r.estado === "completado").length], ["Citas Pendientes", misCitas.filter(r => r.estado === "pendiente").length], ["En Curso", misCitas.filter(r => r.estado === "en_curso").length]].map(([l, v]) => (
-      <div key={l} className="kpi"><div className="kpi-lbl">{l}</div><div className="kpi-val gold">{v}</div></div>
-    ))}
-  </div>
-  <GananciasPanel barbero={barberoData} misCitas={misCitas} />
-  <div className="blk">
-    <div className="blk-title">Ranking del Equipo</div>
-    {[...barberos].map(b => ({
-      ...b,
-      completadosHoy: reservas.filter(r => r.barbero?.id === b.id && r.estado === 'completado').length
-    })).sort((a, b) => b.completadosHoy - a.completadosHoy).map((b, i) => (
-      <div key={b.id} className="row">
-        <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: i === 0 ? "var(--gold)" : "var(--muted)", width: 28 }}>#{i + 1}</div>
-        <div className="av-sm" style={{ background: b.color, border: b.id === barberoData.id ? "2px solid var(--gold)" : "none" }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontWeight: b.id === barberoData.id ? 700 : 400, fontSize: 13, color: b.id === barberoData.id ? "#fff" : "var(--muted)" }}>{b.nombre.split(" ")[0]}</span>
-            <span style={{ fontSize: 12, color: "var(--gold)" }}>{b.completadosHoy} completados</span>
+          <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 700, fontStyle: "italic", marginBottom: 22 }}>Estadísticas</div>
+          <div className="kpi-grid">
+            {[["Completados Hoy", misCitas.filter(r => r.estado === "completado").length], ["Citas Pendientes", misCitas.filter(r => r.estado === "pendiente").length], ["En Curso", misCitas.filter(r => r.estado === "en_curso").length]].map(([l, v]) => (
+              <div key={l} className="kpi"><div className="kpi-lbl">{l}</div><div className="kpi-val gold">{v}</div></div>
+            ))}
           </div>
-          <div className="prog" style={{ marginTop: 5 }}>
-            <div className="prog-fill" style={{ width: "100%", background: b.id === barberoData.id ? "var(--gold)" : b.color, opacity: b.id === barberoData.id ? 1 : 0.3 }} />
+          <GananciasPanel barbero={barberoData} misCitas={misCitas} />
+          <div className="blk">
+            <div className="blk-title">Ranking del Equipo</div>
+            {[...barberos].map(b => ({
+              ...b,
+              completadosHoy: reservas.filter(r => r.barbero?.id === b.id && r.estado === 'completado').length
+            })).sort((a, b) => b.completadosHoy - a.completadosHoy).map((b, i) => (
+              <div key={b.id} className="row">
+                <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontStyle: "italic", color: i === 0 ? "var(--gold)" : "var(--muted)", width: 28 }}>#{i + 1}</div>
+                <div className="av-sm" style={{ background: b.color, border: b.id === barberoData.id ? "2px solid var(--gold)" : "none" }}>{b.nombre?.slice(0,2).toUpperCase()}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ fontWeight: b.id === barberoData.id ? 700 : 400, fontSize: 13, color: b.id === barberoData.id ? "#fff" : "var(--muted)" }}>{b.nombre.split(" ")[0]}</span>
+                    <span style={{ fontSize: 12, color: "var(--gold)" }}>{b.completadosHoy} completados</span>
+                  </div>
+                  <div className="prog" style={{ marginTop: 5 }}>
+                    <div className="prog-fill" style={{ width: "100%", background: b.id === barberoData.id ? "var(--gold)" : b.color, opacity: b.id === barberoData.id ? 1 : 0.3 }} />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
-    ))}
-  </div>
-</div>}
+        </div>}
 
         {tab === "perfil" && <div className="fade">
           <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 700, fontStyle: "italic", marginBottom: 22 }}>Mi Perfil</div>
           <div className="blk" style={{ marginBottom: 14 }}>
             <div className="blk-title">Información</div>
-            {[["Nombre", barberoData.nombre], ["Especialidad", barberoData.especialidad], ["Horario", barberoData.horario], ["Bio", barberoData.bio]].map(([l, v]) => (
+            {[["Nombre", barberoData.nombre], ["Especialidad", barberoData.especialidad], ["Horario", `${barberoData.horario_inicio?.slice(0,5)} – ${barberoData.horario_fin?.slice(0,5)}`], ["Bio", barberoData.bio]].map(([l, v]) => (
               <div className="conf-row" key={l}><span className="conf-lbl">{l}</span><span style={{ maxWidth: 280, textAlign: "right", fontSize: 13 }}>{v}</span></div>
             ))}
           </div>
           <div className="blk">
             <div className="blk-title">Mi Galería</div>
-            <GaleriaEditor barbero={barbero} />
+            <GaleriaEditor barbero={barberoData} />
           </div>
         </div>}
       </div>
