@@ -954,13 +954,13 @@ function Reservas({ initData = {}, barberos, servicios }) {
 }
 function EditBarberoForm({ barbero, onClose, onSaved }) {
   const [form, setForm] = useState({
-    nombre:         barbero.nombre || "",
-    especialidad:   barbero.especialidad || "",
-    bio:            barbero.bio || "",
-    horario_inicio: barbero.horario_inicio || "",
-    horario_fin:    barbero.horario_fin || "",
-    color:          barbero.color || "#D4AF37",
-    porcentaje:     barbero.porcentaje || 60,
+    nombre:         barberoData.nombre || "",
+    especialidad:   barberoData.especialidad || "",
+    bio:            barberoData.bio || "",
+    horario_inicio: barberoData.horario_inicio || "",
+    horario_fin:    barberoData.horario_fin || "",
+    color:          barberoData.color || "#D4AF37",
+    porcentaje:     barberoData.porcentaje || 60,
   });
   const [saving, setSaving] = useState(false);
   const [fotoPreview, setFotoPreview] = useState(barbero.foto_url || null);
@@ -2382,7 +2382,7 @@ function GaleriaEditor({ barbero }) {
       )}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
         {fotos.map(f => (
-          <div key={f.id} style={{ aspectRatio: "1", overflow: "hidden", border: `1px solid ${barbero.color}25`, position: "relative" }}>
+          <div key={f.id} style={{ aspectRatio: "1", overflow: "hidden", border: `1px solid ${barberoData.color}25`, position: "relative" }}>
             <img src={f.url} alt={f.titulo} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.5)", opacity: 0, transition: "opacity .2s", display: "flex", alignItems: "center", justifyContent: "center" }}
               onMouseEnter={e => e.currentTarget.style.opacity = 1}
@@ -2407,7 +2407,7 @@ function GananciasPanel({ barbero, misCitas }) {
       .catch(() => {});
   }, [barbero.id, misCitas.length]);
 
-  const pct = barbero.porcentaje || 60;
+  const pct = barberoData.porcentaje || 60;
   const calc = (total) => Math.round(total * pct / 100);
 
   return (
@@ -2440,7 +2440,15 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
   const hoy = new Date().toISOString().split('T')[0];
   const [reservas, setReservas] = useState([]);
 
+  const [barberoData, setBarberoData] = useState(barbero);
+
   useEffect(() => {
+    api.getBarberos()
+      .then(data => {
+        const actualizado = data.find(b => b.id === barbero.id);
+        if (actualizado) setBarberoData(actualizado);
+      })
+      .catch(() => {});
     api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
     const unsub = api.suscribirReservas(() => {
       api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
@@ -2482,15 +2490,15 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
   return (
     <div className="bp">
       <div className="bp-header">
-        <div className="bp-av" style={{ background: barbero.color, overflow: "hidden", padding: 0 }}>
+        <div className="bp-av" style={{ background: barberoData.color, overflow: "hidden", padding: 0 }}>
           {barbero.foto_url
-            ? <img src={barbero.foto_url} alt={barbero.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : barbero.nombre?.slice(0,2).toUpperCase()
+            ? <img src={barbero.foto_url} alt={barberoData.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            : barberoData.nombre?.slice(0,2).toUpperCase()
           }
         </div>
         <div>
-          <div className="bp-name">{barbero.nombre}</div>
-          <div className="bp-esp">{barbero.especialidad}</div>
+          <div className="bp-name">{barberoData.nombre}</div>
+          <div className="bp-esp">{barberoData.especialidad}</div>
         </div>
         <div className="bp-tabs">
           {[["citas","Mis Citas"],["stats","Estadísticas"],["perfil","Mi Perfil"]].map(([k,l]) => (
@@ -2503,7 +2511,7 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
         {tab === "citas" && <div className="fade">
           <div style={{ marginBottom: 22 }}>
             <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 700, fontStyle: "italic" }}>Mis Citas de Hoy</div>
-            <div style={{ fontSize: 13, color: "var(--muted)" }}>{misCitas.length} citas · {barbero.horario}</div>
+            <div style={{ fontSize: 13, color: "var(--muted)" }}>{misCitas.length} citas · {barberoData.horario}</div>
           </div>
           {misCitas.length === 0 && <div style={{ color: "var(--muted)", textAlign: "center", padding: "60px 0", fontFamily: "'Cormorant Garamond',serif", fontSize: 18, fontStyle: "italic" }}>Sin citas programadas para hoy</div>}
           {misCitas.map(r => (
@@ -2547,7 +2555,7 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
       <div key={l} className="kpi"><div className="kpi-lbl">{l}</div><div className="kpi-val gold">{v}</div></div>
     ))}
   </div>
-  <GananciasPanel barbero={barbero} misCitas={misCitas} />
+  <GananciasPanel barbero={barberoData} misCitas={misCitas} />
   <div className="blk">
     <div className="blk-title">Ranking del Equipo</div>
     {/* FIX: Ranking ordenado por completados reales del día */}
@@ -2576,7 +2584,7 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
           <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 700, fontStyle: "italic", marginBottom: 22 }}>Mi Perfil</div>
           <div className="blk" style={{ marginBottom: 14 }}>
             <div className="blk-title">Información</div>
-            {[["Nombre", barbero.nombre], ["Especialidad", barbero.especialidad], ["Horario", barbero.horario], ["Bio", barbero.bio]].map(([l, v]) => (
+            {[["Nombre", barberoData.nombre], ["Especialidad", barberoData.especialidad], ["Horario", barberoData.horario], ["Bio", barberoData.bio]].map(([l, v]) => (
               <div className="conf-row" key={l}><span className="conf-lbl">{l}</span><span style={{ maxWidth: 280, textAlign: "right", fontSize: 13 }}>{v}</span></div>
             ))}
           </div>
