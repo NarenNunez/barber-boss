@@ -13,12 +13,12 @@ const BARBEROS = [
 ];
 
 const SERVICIOS = [
-  { id: 1, nombre: "Corte Clásico",    precio: 25000, duracion: 30 },
-  { id: 2, nombre: "Corte + Barba",    precio: 40000, duracion: 50 },
-  { id: 3, nombre: "Barba Completa",   precio: 20000, duracion: 25 },
-  { id: 4, nombre: "Afeitado Navaja",  precio: 30000, duracion: 35 },
-  { id: 5, nombre: "Corte Premium",    precio: 55000, duracion: 60 },
-  { id: 6, nombre: "Color & Corte",    precio: 70000, duracion: 90 },
+  { id: 1, nombre: "Corte Clásico",    precio: 25000 },
+  { id: 2, nombre: "Corte + Barba",    precio: 40000 },
+  { id: 3, nombre: "Barba Completa",   precio: 20000 },
+  { id: 4, nombre: "Afeitado Navaja",  precio: 30000 },
+  { id: 5, nombre: "Corte Premium",    precio: 55000 },
+  { id: 6, nombre: "Color & Corte",    precio: 70000 },
 ];
 
 const ABONO_MIN = 10000;
