@@ -2441,18 +2441,25 @@ function BarberoPanel({ barbero, onLogout, barberos }) {
   const [reservas, setReservas] = useState([]);
   const [barberoData, setBarberoData] = useState(barbero);
 
-  useEffect(() => {
+  const cargarBarbero = () => {
     api.getBarberos()
       .then(data => {
         const actualizado = data.find(b => b.id === barbero.id);
         if (actualizado) setBarberoData(actualizado);
       })
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    cargarBarbero();
     api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
-    const unsub = api.suscribirReservas(() => {
+    const unsubReservas = api.suscribirReservas(() => {
       api.getReservas(hoy).then(data => setReservas(data)).catch(() => {});
     });
-    return unsub;
+    const unsubBarberos = api.suscribirBarberos(() => {
+      cargarBarbero();
+    });
+    return () => { unsubReservas(); unsubBarberos(); };
   }, []);
 
   const misCitas = reservas.filter(r => r.barbero?.id === barberoData.id);
