@@ -1381,6 +1381,8 @@ function SuperAdmin({ barberos, servicios }) {
   const [toasts, setToasts] = useState([]);
   const reservasRef = React.useRef([]);
 
+  const [refrescando, setRefrescando] = useState(false);
+
   const [horaActual, setHoraActual] = useState(new Date());
   useEffect(() => {
     const t = setInterval(() => setHoraActual(new Date()), 1000);
@@ -1606,8 +1608,31 @@ function SuperAdmin({ barberos, servicios }) {
     setReservas(p => p.map(r => r.id === id ? { ...r, estado: "cancelado" } : r));
   };
 
-  return (
+      return (
     <div className="admin">
+      {/* PANTALLA DE CARGA */}
+      {refrescando && (
+        <div style={{
+          position: "fixed", inset: 0, background: "#000", zIndex: 9999,
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24
+        }}>
+          <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 48, fontWeight: 900, fontStyle: "italic", color: "var(--gold)" }}>
+            Barber<span style={{ color: "#fff" }}>Boss</span>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {[0,1,2].map(i => (
+              <div key={i} style={{
+                width: 10, height: 10, borderRadius: "50%", background: "var(--gold)",
+                animation: `fadeUp .6s ease ${i * 0.2}s infinite alternate`
+              }} />
+            ))}
+          </div>
+          <div style={{ fontSize: 12, color: "var(--muted)", letterSpacing: 3, textTransform: "uppercase", fontFamily: "'DM Sans',sans-serif" }}>
+            Actualizando...
+          </div>
+        </div>
+      )}
+
       {/* Botón hamburguesa móvil */}
       <button onClick={() => setMenuMobile(true)} style={{
         display: "none", position: "fixed", top: 14, left: 14, zIndex: 600,
@@ -2115,7 +2140,11 @@ function SuperAdmin({ barberos, servicios }) {
           <div className="modal">
             <button className="modal-close" onClick={() => setEditModal(null)}>✕</button>
             <div className="modal-title">Editar Barbero</div>
-            <EditBarberoForm barbero={editModal} onClose={() => setEditModal(null)} onSaved={() => setEditModal(null)} />
+            <EditBarberoForm barbero={editModal} onClose={() => setEditModal(null)} onSaved={() => {
+  setEditModal(null);
+  setRefrescando(true);
+  setTimeout(() => window.location.reload(), 300);
+}} />
           </div>
         </div>
       )}
