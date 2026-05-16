@@ -981,7 +981,7 @@ function EditBarberoForm({ barbero, onClose, onSaved }) {
     let foto_url = barbero.foto_url;
     if (fotoFile) {
       const ext = fotoFile.name.split('.').pop();
-      const path = `barbero-${barbero.id}.${ext}`;
+      const path = `barbero-${barbero.id}-${Date.now()}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from('fotos-barberos')
         .upload(path, fotoFile, { upsert: true });
