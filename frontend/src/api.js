@@ -138,7 +138,7 @@ export const api = {
       url: data.publicUrl,
       storage_key: path,
       titulo: titulo || 'Sin título',
-      orden: Date.now(),
+      orden: Math.floor(Math.random() * 30000),
     });
     if (error) throw error;
     return data.publicUrl;
